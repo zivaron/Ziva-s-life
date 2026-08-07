@@ -6,12 +6,12 @@ const C = [];
 const add = (...x) => x.flat().forEach(i => C.push(i));
 
 // Original manuscript line — set apart visually.
-const ORIG = (t) => P(t, { size: 21, color: '2A2A2A', indent: { right: 240 }, after: 40, line: 300 });
+const ORIG = (t) => P(t, { size: 21, color: '2A2A2A', indent: { left: 240 }, after: 40, line: 300 });
 // Editorial note attached to the line above it.
 const N = (num, kind, text, color) => P(
   [[`◄ ${num}  `, { bold: true, color }], [kind + ': ', { bold: true, color }], [text, {}]],
   { fill: kind === 'תיקון חובה' ? 'FBEEEE' : kind === 'רעיון' ? 'EDF5EF' : 'FBF6E7',
-    indent: { right: 520, left: 120 }, after: 120, size: 18, leftBar: color, line: 280 });
+    indent: { left: 520, right: 120 }, after: 120, size: 18, leftBar: color, line: 280 });
 const FIX = (num, text) => N(num, 'תיקון חובה', text, RED);
 const EDIT = (num, text) => N(num, 'הערת עריכה', text, GOLD);
 const IDEA = (num, text) => N(num, 'רעיון', text, GREEN);

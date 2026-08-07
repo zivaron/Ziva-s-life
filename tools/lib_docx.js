@@ -5,6 +5,16 @@ const {
   PageBreak, LevelFormat, convertInchesToTwip,
 } = require('docx');
 
+// ── כיווניות: הכלל שנפלנו בו ─────────────────────────────────────────────
+// ב-OOXML הערכים left/right ב-w:jc, ב-w:ind וב-w:pBdr הם כינויים לוגיים
+// ל-start/end — לא לצדדים פיזיים. בפסקה עם <w:bidi/> הצד ה"מתחיל" הוא ימין,
+// ולכן:
+//     jc="right"  → הקצה המסיים → הטקסט נדחף שמאלה  ✗
+//     jc מושמט    → הקצה המתחיל → הטקסט מיושר לימין ✓
+//     ind left=N  → הזחה מהקצה הימני                 ✓
+//     border left → פס בצד ימין                      ✓
+// לכן כאן לא מציינים יישור לפסקאות עברית רגילות, ומשתמשים ב-left כדי
+// לקבל את הצד הימני. CENTER הוא נייטרלי ולכן בטוח לשימוש ישיר.
 const FONT = 'Arial';
 const BODY = 22;   // 11pt (half-points)
 const SMALL = 19;
@@ -39,12 +49,12 @@ const P = (content, o = {}) => {
   return new Paragraph({
     children: kids,
     bidirectional: true,
-    alignment: o.align || AlignmentType.RIGHT,
+    alignment: o.align,               // מושמט = יישור לימין בפסקה דו־כיוונית
     spacing: { after: o.after === undefined ? 120 : o.after, before: o.before || 0, line: o.line || 300 },
     indent: o.indent,
     shading: o.fill ? { type: ShadingType.CLEAR, fill: o.fill, color: 'auto' } : undefined,
     border: o.leftBar
-      ? { right: { style: BorderStyle.SINGLE, size: 18, color: o.leftBar, space: 8 } }
+      ? { left: { style: BorderStyle.SINGLE, size: 18, color: o.leftBar, space: 8 } }
       : (o.box ? {
           top: { style: BorderStyle.SINGLE, size: 4, color: o.box, space: 6 },
           bottom: { style: BorderStyle.SINGLE, size: 4, color: o.box, space: 6 },
@@ -60,7 +70,6 @@ const H = (text, level, o = {}) => new Paragraph({
   children: [run(text, { bold: true, size: o.size || (level === 1 ? 34 : level === 2 ? 27 : 23), color: o.color || (level === 1 ? INK : level === 2 ? BLUE : INK) })],
   heading: level === 1 ? HeadingLevel.HEADING_1 : level === 2 ? HeadingLevel.HEADING_2 : HeadingLevel.HEADING_3,
   bidirectional: true,
-  alignment: AlignmentType.RIGHT,
   spacing: { before: o.before === undefined ? (level === 1 ? 400 : 320) : o.before, after: o.after === undefined ? 160 : o.after },
   pageBreakBefore: !!o.pageBreakBefore,
   keepNext: true,
@@ -77,7 +86,6 @@ const BULLET = (content, o = {}) => {
   return new Paragraph({
     children: kids,
     bidirectional: true,
-    alignment: AlignmentType.RIGHT,
     numbering: { reference: o.numbered ? 'num-list' : 'bullet-list', level: o.level || 0 },
     spacing: { after: 80, line: 290 },
   });
@@ -136,10 +144,10 @@ const TABLE = (cols, widths, rows, o = {}) => {
 // bidi על פסקת הרשימה, ו-rtl על תו התבליט/המספר עצמו — אחרת התבליט
 // נוחת בצד שמאל של טקסט מיושר לימין, ו-"1." מוצג כ-".1".
 const rtlLevel = (level, format, text, right) => ({
-  level, format, text, alignment: AlignmentType.RIGHT,
+  level, format, text, alignment: AlignmentType.LEFT,   // left = start = ימין
   style: {
     run: { rightToLeft: true, font: FONT },
-    paragraph: { bidirectional: true, indent: { right, hanging: 240 } },
+    paragraph: { bidirectional: true, indent: { left: right, hanging: 240 } },
   },
 });
 
@@ -168,7 +176,7 @@ async function build(children, outPath, title) {
         // דרך העוטפים שלנו תתנהג כעברית ולא כלטינית.
         document: {
           run: { font: FONT, size: BODY, color: INK, rightToLeft: true },
-          paragraph: { bidirectional: true, alignment: AlignmentType.RIGHT },
+          paragraph: { bidirectional: true },
         },
       },
     },

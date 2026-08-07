@@ -56,9 +56,11 @@ const P = (content, o = {}) => {
     border: o.leftBar
       ? { left: { style: BorderStyle.SINGLE, size: 18, color: o.leftBar, space: 8 } }
       : (o.box ? {
+          // סדר המפתחות חייב לעקוב אחר סכמת CT_PBdr (top, left, bottom, right) —
+          // docx-js מייצר את ה-XML לפי סדר האובייקט, וסדר שגוי פוסל את המסמך.
           top: { style: BorderStyle.SINGLE, size: 4, color: o.box, space: 6 },
-          bottom: { style: BorderStyle.SINGLE, size: 4, color: o.box, space: 6 },
           left: { style: BorderStyle.SINGLE, size: 4, color: o.box, space: 6 },
+          bottom: { style: BorderStyle.SINGLE, size: 4, color: o.box, space: 6 },
           right: { style: BorderStyle.SINGLE, size: 4, color: o.box, space: 6 },
         } : undefined),
     keepNext: !!o.keepNext,

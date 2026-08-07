@@ -132,23 +132,29 @@ const TABLE = (cols, widths, rows, o = {}) => {
   });
 };
 
+// כל רמת רשימה חייבת שלושה דברים כדי להתנהג נכון בעברית: יישור לימין,
+// bidi על פסקת הרשימה, ו-rtl על תו התבליט/המספר עצמו — אחרת התבליט
+// נוחת בצד שמאל של טקסט מיושר לימין, ו-"1." מוצג כ-".1".
+const rtlLevel = (level, format, text, right) => ({
+  level, format, text, alignment: AlignmentType.RIGHT,
+  style: {
+    run: { rightToLeft: true, font: FONT },
+    paragraph: { bidirectional: true, indent: { right, hanging: 240 } },
+  },
+});
+
 const numbering = {
   config: [
     {
       reference: 'bullet-list',
       levels: [
-        { level: 0, format: LevelFormat.BULLET, text: '•', alignment: AlignmentType.RIGHT,
-          style: { paragraph: { indent: { right: 360, hanging: 220 } } } },
-        { level: 1, format: LevelFormat.BULLET, text: '◦', alignment: AlignmentType.RIGHT,
-          style: { paragraph: { indent: { right: 720, hanging: 220 } } } },
+        rtlLevel(0, LevelFormat.BULLET, '•', 360),
+        rtlLevel(1, LevelFormat.BULLET, '◦', 720),
       ],
     },
     {
       reference: 'num-list',
-      levels: [
-        { level: 0, format: LevelFormat.DECIMAL, text: '%1.', alignment: AlignmentType.RIGHT,
-          style: { paragraph: { indent: { right: 400, hanging: 260 } } } },
-      ],
+      levels: [rtlLevel(0, LevelFormat.DECIMAL, '%1.', 400)],
     },
   ],
 };
@@ -158,7 +164,12 @@ async function build(children, outPath, title) {
     numbering,
     styles: {
       default: {
-        document: { run: { font: FONT, size: BODY, color: INK }, paragraph: { bidirectional: true, alignment: AlignmentType.RIGHT } },
+        // rightToLeft כאן מייצר <w:rtl/> ב-docDefaults, כך שגם ריצה שלא עברה
+        // דרך העוטפים שלנו תתנהג כעברית ולא כלטינית.
+        document: {
+          run: { font: FONT, size: BODY, color: INK, rightToLeft: true },
+          paragraph: { bidirectional: true, alignment: AlignmentType.RIGHT },
+        },
       },
     },
     sections: [{

@@ -67,7 +67,8 @@ button { font: inherit; color: inherit; }
 .nav a:hover { color: var(--ink); background: var(--chrome); }
 .nav a[aria-current="page"] { background: var(--ink); color: var(--surface); }
 
-main { padding-block: 36px 72px; }
+main { padding-block: 36px 72px; display: grid; gap: 24px; }
+main > .local-note[hidden] { display: none; }
 .view { display: grid; gap: 28px; }
 .view-head { display: grid; gap: 10px; }
 .view-head h1 { font-size: clamp(28px, 5vw, 44px); font-weight: 800; letter-spacing: -0.01em; }
@@ -259,6 +260,28 @@ main { padding-block: 36px 72px; }
 
 .foot { color: var(--muted); font-size: 14px; }
 
+/* open-in-explorer links */
+.open-btn { justify-self: start; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; background: var(--ink); color: var(--surface); font-family: var(--font-display); font-weight: 600; font-size: 15px; padding: 9px 16px; border-radius: 10px; }
+.open-btn:hover { opacity: .9; }
+.open-btn::before { content: ""; width: 16px; height: 12px; border-radius: 2px; background: var(--t-sun2); box-shadow: inset 0 3px 0 rgba(0,0,0,.12); }
+.path { font-size: 12px; color: var(--muted); word-break: break-all; text-align: left; }
+.hint { font-size: 13px; color: var(--muted); background: var(--bg); border-radius: 8px; padding: 8px 10px; }
+.open-link { font-family: var(--font-display); font-size: 13px; font-weight: 600; color: var(--accent); text-decoration: none; justify-self: start; }
+.open-link:hover { text-decoration: underline; }
+a.folder { color: inherit; text-decoration: none; transition: border-color .15s, transform .15s; }
+a.folder:hover { border-color: var(--t-leaf1); transform: translateY(-2px); }
+.local-note { display: flex; gap: 10px; align-items: flex-start; background: var(--warn-soft); color: var(--ink); border-radius: 12px; padding: 12px 14px; font-size: 15px; }
+.local-note b { font-family: var(--font-display); }
+.st-grow { display: flex; align-items: flex-end; justify-content: center; gap: 22px; padding-bottom: 34px; }
+.st-grow i { width: var(--s); height: var(--s); border-radius: 50%; background: linear-gradient(150deg, var(--t-sun1), var(--t-sun2)); position: relative; animation: blink 4.5s ease-in-out infinite; animation-delay: var(--d); }
+.st-grow i::after { content: attr(data-y); position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%); font-family: var(--font-display); font-size: 12px; font-weight: 600; font-style: normal; color: var(--ink); }
+.st-cal { display: grid; place-items: center; }
+.st-cal .page-cal { width: 96px; border-radius: 10px; overflow: hidden; background: var(--surface); box-shadow: 0 8px 20px rgba(0,0,0,.15); text-align: center; position: absolute; right: 22%; }
+.st-cal .page-cal b { display: block; background: var(--t-rose1); color: #fff; font-family: var(--font-display); font-size: 12px; padding: 3px 0; }
+.st-cal .page-cal span { display: block; font-family: var(--font-display); font-size: 34px; font-weight: 800; line-height: 1.3; }
+.st-cal .mem { position: absolute; width: 74px; height: 56px; border-radius: 6px; left: var(--x); top: var(--y); animation: blink 6s ease-in-out infinite; animation-delay: var(--d); }
+.st-cal .mem em { position: absolute; bottom: -18px; left: 0; right: 0; text-align: center; font-family: var(--font-display); font-size: 11px; font-weight: 600; font-style: normal; color: var(--ink); }
+
 /* concept diagrams (flowchart + entity diagram) */
 .diagram-card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 18px; display: grid; gap: 14px; }
 .diagram-head { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
@@ -333,12 +356,14 @@ main { padding-block: 36px 72px; }
         <a href="#map" data-view="map">המפה</a>
         <a href="#look" data-view="look">ככה זה ייראה</a>
         <a href="#move" data-view="move">מה עובר לאן</a>
-        <a href="#ideas" data-view="ideas">רעיונות בשבילך</a>
+        <a href="#ideas" data-view="ideas">רעיונות לתמונות</a>
+        <a href="#morning" data-view="morning">רעיונות לסקירת הבוקר</a>
       </nav>
     </div>
   </header>
 
   <main class="wrap">
+    <p class="local-note" id="local-note" hidden><span><b>כדי שהכפתורים יפתחו את התמונות במחשב:</b> פתחי את האתר מהמחשב עצמו. בתיקייה מסמכים › Ziva-s-life › סידור-תמונות, לחיצה כפולה על הקובץ "מפת-סידור-התמונות". בפעם הראשונה הדפדפן ישאל אם לפתוח את סייר הקבצים. זה בטוח לאשר עבור האתר הזה.</span></p>
 
     <!-- PLAN (diagrams) -->
     <section class="view" id="view-plan">
@@ -567,11 +592,21 @@ main { padding-block: 36px 72px; }
     <!-- IDEAS -->
     <section class="view" id="view-ideas" hidden>
       <div class="view-head">
-        <span class="eyebrow">מה עוד אפשר לעשות יחד</span>
-        <h1>רעיונות בשבילך</h1>
-        <p>דברים שאני יכול לבנות איתך מתוך מה שכבר יש לך: התמונות, הספר, הטיולים, הלימודים. כדי להתחיל, מעתיקים את המשפט שבתחתית הכרטיס ושולחים לי.</p>
+        <span class="eyebrow">מה עוד אפשר לעשות עם התמונות</span>
+        <h1>רעיונות לתמונות</h1>
+        <p>מפות, צירי זמן ואלבומים שאני יכול לבנות מתוך התמונות שכבר יש לך, בלי להעתיק אותן. כדי להתחיל, מעתיקים את המשפט שבתחתית הכרטיס ושולחים לי.</p>
       </div>
       <div class="ideas" id="ideas"></div>
+    </section>
+
+    <!-- MORNING IDEAS -->
+    <section class="view" id="view-morning" hidden>
+      <div class="view-head">
+        <span class="eyebrow">דברים קטנים לכל בוקר</span>
+        <h1>רעיונות לסקירת הבוקר</h1>
+        <p>דברים שיכולים להופיע בסקירה שלך כל בוקר, ליד הקפה: יד ברידג', רגע כתיבה לספר, שאלה מהלימודים. כדי להוסיף אחד, מעתיקים את המשפט ושולחים לי.</p>
+      </div>
+      <div class="ideas" id="ideas-morning"></div>
     </section>
 
   </main>
@@ -591,6 +626,12 @@ main { padding-block: 36px 72px; }
   };
   const fmt = n => n.toLocaleString('he-IL');
 
+  /* real folders on Ziva's computer: links open File Explorer there. Nothing is copied. */
+  const P = 'C:\\Users\\USER\\Pictures', D = 'C:\\Users\\USER\\Desktop', INDIA = P + '\\הודו';
+  const isLocal = location.protocol === 'file:';
+  function openUrl(dir, q) { return 'search-ms:' + (q ? 'query=' + encodeURIComponent(q) + '&' : '') + 'crumb=location:' + encodeURIComponent(dir); }
+  const TGT = isLocal ? '' : ' target="_blank" rel="noopener"';
+
   const yearRaw = [
     [2016,'9:1'],[2017,'3:1 7:23 12:3'],[2018,'4:4 9:3'],
     [2019,'2:5 3:5 4:1 5:1 7:2 8:8 9:57 10:212 11:45 12:22'],
@@ -604,13 +645,13 @@ main { padding-block: 36px 72px; }
   ];
   const monthNotes = { '2026-2': 'הטיול להודו', '2026-3': 'הטיול להודו', '2026-7': 'לונדון', '2025-1': 'יפן?', '2025-2': 'יפן?' };
   const years = yearRaw.map(([y, s]) => {
-    const kids = s.split(' ').map(p => { const [m, c] = p.split(':').map(Number); return { name: String(m).padStart(2, '0') + ' ' + MONTHS[m - 1], count: c, note: monthNotes[y + '-' + m] || '' }; });
+    const kids = s.split(' ').map(p => { const [m, c] = p.split(':').map(Number); return { name: String(m).padStart(2, '0') + ' ' + MONTHS[m - 1], count: c, note: monthNotes[y + '-' + m] || '', dir: P + '\\' + y }; });
     const count = kids.reduce((a, k) => a + k.count, 0);
-    return { name: String(y), count, note: count > 1000 ? 'שנה עמוסה. כדאי לחלק לחודשים.' : '', children: kids.length > 1 ? kids : null };
+    return { name: String(y), count, dir: P + '\\' + y, note: count > 1000 ? 'שנה עמוסה. כדאי לחלק לחודשים.' : '', children: kids.length > 1 ? kids : null };
   }).reverse();
 
   const india = [['רישיקש',220],["ג'איפור",170],['מונאר והסביבה',241],['דלהי',138],['אמריצר',138],["מקלאוד גאנג'",102],['דרמסאלה',61],['אגרה',52],['ורנאסי',52],['עוד מקומות',137]]
-    .map(([name, count]) => ({ name, count }));
+    .map(([name, count]) => ({ name, count, dir: INDIA, q: name === 'מונאר והסביבה' ? 'מונאר' : (name === 'עוד מקומות' ? '' : name) }));
 
   const tree = {
     name: 'כל התמונות',
@@ -643,6 +684,16 @@ main { padding-block: 36px 72px; }
   };
   (function sumUp(n) { if (n.children) { n.children.forEach(sumUp); if (n.count == null) n.count = n.children.reduce((a, k) => a + k.count, 0); } })(tree);
   (function famDown(n, fam) { n.fam = n.fam || fam; (n.children || []).forEach(k => famDown(k, n.fam)); })(tree, 'sky');
+  const DIRS = {
+    'שנים': P, 'טיולים': D + '\\טיולים', '2026-02 הודו': INDIA,
+    '2016 יפן': D + '\\טיולים\\יפן 2016', 'יפן': D + '\\טיולים\\יפן', 'מאוריציוס': D + '\\טיולים\\מאוריציוס',
+    'כרתים': D + '\\טיולים\\כרתים', 'סרי לנקה': D + '\\טיולים\\סרילנקה', 'דלהי': D + '\\טיולים\\דלהי',
+    'יום הולדת בחוף · סאני ואמא': D + '\\תמונות חוף 50 בוק סאני ואמא יומהולדת',
+    'חתונה וחינה': D + '\\‏‏חתונה וחינה - עותק', '2024 · הולדת סאני': P + '\\2024',
+    'פל מאי 2018': D + '\\פל מאי 2018', 'סאני (2023)': P + '\\סאני',
+    'ספר סאני · איורים': D + '\\סאני ספר', 'Canva': D + '\\canva', 'לבדיקה ומחיקה': P + '\\Screenshots'
+  };
+  (function dirDown(n) { if (!n.dir && DIRS[n.name]) n.dir = DIRS[n.name]; (n.children || []).forEach(dirDown); })(tree);
 
   /* stats */
   const top = tree.children;
@@ -697,9 +748,7 @@ main { padding-block: 36px 72px; }
         ${n.note && r.h > 120 && r.w > 170 ? `<div class="tile-note">${n.note}</div>` : ''}
         ${open ? '<div class="open-hint">לחצי לפתוח ←</div>' : (r.w > 120 && r.h > 100 ? '<span class="stack" aria-hidden="true"><i></i><i></i><i></i></span>' : '')}`;
       if (open) inner.addEventListener('click', () => { path.push(n); update(); });
-      else inner.addEventListener('click', () => showInfo(n));
-      inner.addEventListener('mouseenter', () => showInfo(n));
-      inner.addEventListener('focus', () => showInfo(n));
+      else inner.addEventListener('click', () => { showInfo(n); if (window.innerWidth < 900) document.getElementById('info').scrollIntoView({ behavior: 'smooth', block: 'center' }); });
       tile.appendChild(inner); tm.appendChild(tile);
     });
   }
@@ -711,11 +760,16 @@ main { padding-block: 36px 72px; }
   }
   function showInfo(n) {
     const f = FAM[n.fam];
-    const kids = n.children ? `<p>${n.children.length} תיקיות בפנים.</p>` : '';
+    const kids = n.children ? `<p>${n.children.length} תיקיות בפנים. לחיצה על ריבוע נכנסת אליו.</p>` : '';
+    const open = n.dir
+      ? `<a class="open-btn" href="${openUrl(n.dir, n.q)}"${TGT}>פתיחת התיקייה במחשב</a>
+         <p class="path" dir="ltr">${n.dir.replace(/‏/g, '')}${n.q ? '  ·  ' + n.q : ''}</p>
+         ${isLocal ? '' : '<p class="hint">הכפתור פותח את סייר הקבצים כשהאתר פתוח מהמחשב. ראי את ההסבר בראש העמוד.</p>'}`
+      : '<p class="hint">התיקייה הזו עוד לא קיימת במחשב. היא תיווצר כשנסדר.</p>';
     document.getElementById('info').innerHTML = `<h3><i class="swatch" style="background:linear-gradient(155deg,${f.c1},${f.c2})"></i>${n.name}</h3>
-      <div class="big">${n.count === 0 ? '0' : fmt(n.count)}</div><p>קבצים</p>${n.note ? `<p>${n.note}</p>` : ''}${kids}`;
+      <div class="big">${n.count === 0 ? '0' : fmt(n.count)}</div><p>קבצים</p>${n.note ? `<p>${n.note}</p>` : ''}${kids}${open}`;
   }
-  function update() { drawCrumbs(); drawMap(); showInfo(current() === tree ? { name: 'כל התמונות', count: tree.count, fam: 'sky', note: 'רחפי או לחצי על ריבוע כדי לראות פרטים.', children: tree.children } : current()); }
+  function update() { drawCrumbs(); drawMap(); showInfo(current() === tree ? { name: 'כל התמונות', count: tree.count, fam: 'sky', dir: P, note: 'לחצי על ריבוע כדי להיכנס אליו. בכל תיקייה יש כפתור שפותח אותה במחשב.', children: tree.children } : current()); }
   let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(drawMap, 120); });
 
   /* concept diagrams */
@@ -762,7 +816,7 @@ main { padding-block: 36px 72px; }
     }
     el.innerHTML = html;
   }
-  document.getElementById('india-folders').innerHTML = india.slice(0, 6).map(c => `<div class="folder"><i class="fi" style="--c1:var(--t-leaf1);--c2:var(--t-leaf2)"></i><b>${c.name}</b><span>${fmt(c.count)} תמונות</span></div>`).join('');
+  document.getElementById('india-folders').innerHTML = india.slice(0, 6).map(c => `<a class="folder" href="${openUrl(c.dir, c.q)}"${TGT} title="פתיחה במחשב"><i class="fi" style="--c1:var(--t-leaf1);--c2:var(--t-leaf2)"></i><b>${c.name}</b><span>${fmt(c.count)} תמונות · פתיחה ↗</span></a>`).join('');
   thumbs(document.getElementById('grid-pc'), 24, 7);
   thumbs(document.getElementById('grid-cloud'), 12, 31, { stars: true });
   const pins = [['רישיקש',220,58,30],["ג'איפור",170,30,52],['דלהי',138,47,38],['אמריצר',138,36,18],['מונאר',241,40,86],["מקלאוד גאנג'",102,46,14],['לונדון',906,82,40],['יפן',1519,12,30],['כרתים',227,74,62]];
@@ -799,8 +853,9 @@ main { padding-block: 36px 72px; }
     ['תמונות', 'Screenshots ותיקיות ריקות', 6, 'לבדיקה ומחיקה', 'slate', 'go', 'תיקיות ריקות אפשר למחוק, באישור שלך.']
   ];
   const pillTxt = { ok: 'כבר מסודר', go: 'מוכן להעברה', ask: 'צריך החלטה שלך' };
-  document.getElementById('moves').innerHTML = moves.map(([where, from, n, to, fam, st, why]) => `<div class="move">
-      <div class="from"><small>${where}</small><b>${from}</b><span class="count">${fmt(n)} קבצים</span></div>
+  const moveDirs = [P, INDIA, D + '\\טיולים', D + '\\תמונות חוף 50 בוק סאני ואמא יומהולדת', D + '\\‏‏חתונה וחינה - עותק', D + '\\פל מאי 2018', P + '\\סאני', D + '\\סאני ספר', P + '\\Screenshots'];
+  document.getElementById('moves').innerHTML = moves.map(([where, from, n, to, fam, st, why], i) => `<div class="move">
+      <div class="from"><small>${where}</small><b>${from}</b><span class="count">${fmt(n)} קבצים</span><a class="open-link" href="${openUrl(moveDirs[i])}"${TGT}>פתיחה במחשב ↗</a></div>
       <div class="arrow" aria-hidden="true"></div>
       <div class="to"><i class="fi" style="--c1:${FAM[fam].c1};--c2:${FAM[fam].c2}"></i><b>${to}</b></div>
       <div class="why"><span class="pill ${st}">${pillTxt[st]}</span>${why}</div></div>`).join('');
@@ -811,9 +866,9 @@ main { padding-block: 36px 72px; }
     { t: 'ציר הזמן של המשפחה', p: 'קו זמן מ-2010 עד היום: טיולים, אירועים, הולדת סאני ב-2024. בכל נקודה תמונה אחת ומשפט קצר, ואפשר לגלול אחורה בשנים.', need: 'לספר לי על כמה אירועים חשובים. את השאר אשלים מהתמונות.', say: 'בוא נבנה ציר זמן של המשפחה', stage: 'time' },
     { t: 'מפת לונדון שלך', p: 'המקומות שכדאי לך לחזור אליהם כשאת אצל הבת: תיאטראות, הופעות, בתי קפה רגועים, גינות לסאני. מותאם לטלפון, לשימוש תוך כדי הליכה.', need: 'כלום. יש לי כבר את מדריך לונדון שלך.', say: 'בוא נבנה מפת לונדון שלי', stage: 'london' },
     { t: 'מפת הטיול להודו', p: 'המסלול מתקדם על המפה יום אחרי יום, ובכל עיר נפתחות התמונות שצילמת שם. יש לי כבר מיקום ותאריך לכל 1,311 התמונות.', need: 'כלום. אני בונה, את מסתכלת.', say: 'בוא נבנה את מפת הטיול להודו', stage: 'route' },
-    { t: 'מפת הדמויות של סאני', p: 'סאני במרכז, וסביבה חמשת הילדים וחמשת הכוחות. לחיצה על ילד מראה איפה הוא מופיע בספר ומה הכוח שלו עושה בעלילה.', need: 'לאשר שאני עובד מתוך הגרסה האחרונה שלך.', say: 'בוא נבנה מפת דמויות לספר של סאני', stage: 'orbit' },
+    { t: 'רגע כתיבה לספר של סאני', p: 'כל בוקר בסקירה: שאלה קטנה על אחת הדמויות, או משפט אחד מהספר עם הצעה לניסוח. ובהמשך גם מפת דמויות שזזה, עם סאני במרכז.', need: 'לאשר שאני עובד מתוך הגרסה האחרונה שלך.', say: 'תוסיף רגע כתיבה לספר לסקירת הבוקר', stage: 'orbit' },
     { t: 'השנה שלי בתמונות', p: 'דף שעובר לאט על הרגעים הכי יפים של 2026: הודו, לונדון, המשפחה. עם מוזיקה שאת בוחרת.', need: 'לבחור 20 עד 40 תמונות אהובות, או לתת לי להציע.', say: 'בוא נעשה את השנה שלי בתמונות 2026', stage: 'stack' },
-    { t: 'כרטיסיות תרגול', p: 'כרטיסיות שמתהפכות: שאלה מצד אחד, תשובה מהצד השני. מתוך מסמכי הברידג\' והסיכומים מהלימודים.', need: 'לבחור נושא: ברידג\' או אחד הקורסים.', say: 'בוא נכין כרטיסיות תרגול לברידג\'', stage: 'flip' },
+    { t: 'שאלה מהלימודים', p: 'כל בוקר כרטיסייה אחת שמתהפכת: שאלה מהסיכומים שלך או מילה באנגלית, והתשובה מאחור.', need: 'לבחור קורס, או אנגלית.', say: 'תוסיף שאלה מהלימודים לסקירת הבוקר', stage: 'flipStudy' },
     { t: 'ספר תמונות לנכדות', p: 'עמודים מעוצבים עם התמונות של סאני וזני ומשפט קצר מסבתא בכל עמוד. אפשר להדפיס או לשלוח לבת.', need: 'לבחור תמונות ולספר לי מה לכתוב, או לתת לי להציע.', say: 'בוא נעצב ספר תמונות לנכדות', stage: 'book' },
     { t: 'סקירת הבוקר', p: 'כל בוקר ב-08:00: איך נראה היום, מה פתוח, מה עשינו אתמול, ורעיון אחד. היומן והמייל יתווספו כשתחברי אותם.', need: 'כלום. כבר מוגדר.', say: 'הראה לי את סקירת הבוקר של היום', stage: 'dawn', on: true }
   ];
@@ -839,6 +894,12 @@ main { padding-block: 36px 72px; }
       <circle class="lp" cx="150" cy="60" r="8" style="--d:1s"/><text x="150" y="46" text-anchor="middle">תיאטרון</text>
       <circle class="lp" cx="245" cy="95" r="8" style="--d:2s"/><text x="245" y="81" text-anchor="middle">גינה לסאני</text>
       <circle class="lp" cx="140" cy="105" r="8" style="--d:3s"/><text x="140" y="96" text-anchor="end" dx="-12">הופעה</text></svg></div>`,
+    flipStudy: `<div class="stage st-flip"><div class="flipcard"><div class="f">resilience</div><div class="b">חוסן: היכולת להתאושש</div></div></div>`,
+    grow: `<div class="stage st-grow"><i data-y="2024" style="--s:34px;--d:0s"></i><i data-y="2025" style="--s:54px;--d:.8s"></i><i data-y="2026" style="--s:78px;--d:1.6s"></i></div>`,
+    cal: `<div class="stage st-cal"><div class="page-cal"><b>נובמבר</b><span>11</span></div>
+      <div class="mem thumb" style="--x:12%;--y:18%;--d:0s;--s1:#F6B48A;--s2:#FDE3C8;--g:#7A5A9E;--g2:#4E3A70;--sn:#FFF1B8;--sx:20%;--sy:15%;--h:50%"><i class="sun"></i><i class="hill"></i><em>2023</em></div>
+      <div class="mem thumb" style="--x:30%;--y:46%;--d:1.2s;--s1:#8EC5F7;--s2:#E8F3FF;--g:#3F7D5A;--g2:#2E5E44;--sn:#FFE08A;--sx:60%;--sy:12%;--h:46%"><i class="sun"></i><i class="hill"></i><em>2024</em></div>
+      <div class="mem thumb" style="--x:6%;--y:62%;--d:2.4s;--s1:#9AD0C2;--s2:#E3F6EF;--g:#4D8B6E;--g2:#2F6B51;--sn:#FFE9A0;--sx:40%;--sy:20%;--h:45%"><i class="sun"></i><i class="hill"></i><em>2025</em></div></div>`,
     route: `<div class="stage st-route"><svg viewBox="0 0 300 170" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
       <path class="path" d="M70 40 C110 30 120 70 150 62 S200 30 225 55 S240 120 200 130 S120 150 95 120"/>
       <circle class="city" cx="70" cy="40" r="6"/><circle class="city" cx="150" cy="62" r="6"/><circle class="city" cx="225" cy="55" r="6"/><circle class="city" cx="200" cy="130" r="6"/><circle class="city" cx="95" cy="120" r="6"/>
@@ -849,10 +910,20 @@ main { padding-block: 36px 72px; }
     book: `<div class="stage st-book"><div class="book"><div class="page l"><div class="ph thumb" style="--s1:#9AD0C2;--s2:#E3F6EF;--g:#4D8B6E;--g2:#2F6B51;--sn:#FFE9A0;--sx:30%;--sy:15%;--h:45%"><i class="sun"></i><i class="hill"></i></div><div class="ln"></div><div class="ln" style="width:70%"></div></div><div class="page r"><div class="ph thumb" style="--s1:#F7D27A;--s2:#FFF2CC;--g:#C27C2C;--g2:#8C561B;--sn:#FFFFFF;--sx:55%;--sy:15%;--h:45%"><i class="sun"></i><i class="hill"></i></div><div class="ln"></div><div class="ln" style="width:60%"></div></div><div class="page turn"><div class="ph thumb" style="--s1:#B7A6E8;--s2:#ECE6FF;--g:#6A58A8;--g2:#463A7A;--sn:#FFE7A6;--sx:40%;--sy:20%;--h:45%"><i class="sun"></i><i class="hill"></i></div><div class="ln"></div><div class="ln" style="width:80%"></div></div></div></div>`,
     dawn: `<div class="stage st-dawn"><svg viewBox="0 0 300 170" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><circle class="sunrise" cx="150" cy="105" r="26"/><rect x="0" y="112" width="300" height="60" fill="var(--chrome)"/><path class="ridge" d="M0 112 C40 112 60 96 90 100 S140 116 170 108 S240 92 300 110"/></svg></div>`
   };
-  document.getElementById('ideas').innerHTML = ideas.map((d, i) => `<article class="idea">${stages[d.stage]}
+  ideas.push(
+    { t: 'סאני גדלה', p: 'פס אחד שעובר על התמונות של סאני מ-2024 עד היום, חודש אחרי חודש. רואים אותה גדלה מול העיניים.', need: 'לסמן את סאני ב"אנשים" ב-Google Photos, או לתת לי לבחור מתיקיות השנים.', say: 'בוא נבנה את סאני גדלה', stage: 'grow' },
+    { t: "יד ברידג' של הבוקר", p: 'כל בוקר בסקירה: יד אחת לחשוב עליה עם הקפה. התשובה מתגלה בלחיצה.', need: 'לספר לי באיזו רמה את משחקת ובאיזו שיטת הכרזה.', say: "תוסיף יד ברידג' לסקירת הבוקר", stage: 'flip' },
+    { t: 'היום, לפני כמה שנים', p: 'בכל בוקר הסקירה מראה מה צילמת באותו תאריך בשנים קודמות, עם קישור שפותח את התיקייה במחשב.', need: 'כלום. התאריכים כבר בתמונות.', say: 'תוסיף את "היום לפני כמה שנים" לסקירת הבוקר', stage: 'cal' }
+  );
+  const PHOTO_IDEAS = ['מפת הטיול להודו', 'מפת כל הטיולים בעולם', 'ציר הזמן של המשפחה', 'סאני גדלה', 'השנה שלי בתמונות', 'ספר תמונות לנכדות'];
+  const MORNING_IDEAS = ['סקירת הבוקר', "יד ברידג' של הבוקר", 'רגע כתיבה לספר של סאני', 'שאלה מהלימודים', 'היום, לפני כמה שנים', 'מפת לונדון שלך'];
+  const card = d => { const i = ideas.indexOf(d); return `<article class="idea">${stages[d.stage]}
       <div class="body">${d.on ? '<span class="pill ok status">כבר פעיל</span>' : ''}<h3>${d.t}</h3><p>${d.p}</p>
       <p class="need"><b>מה צריך ממך:</b> ${d.need}</p>
-      <div class="say"><span id="say-${i}">"${d.say}"</span><button type="button" data-say="${i}">העתקה</button></div></div></article>`).join('');
+      <div class="say"><span id="say-${i}">"${d.say}"</span><button type="button" data-say="${i}">העתקה</button></div></div></article>`; };
+  const pick = names => names.map(n => ideas.find(d => d.t === n)).filter(Boolean);
+  document.getElementById('ideas').innerHTML = pick(PHOTO_IDEAS).map(card).join('');
+  document.getElementById('ideas-morning').innerHTML = pick(MORNING_IDEAS).map(card).join('');
   document.querySelectorAll('[data-say]').forEach(b => b.addEventListener('click', () => {
     const el = document.getElementById('say-' + b.dataset.say); const txt = el.textContent.replace(/"/g, '');
     const done = () => { b.textContent = 'הועתק'; setTimeout(() => { b.textContent = 'העתקה'; }, 1600); };
@@ -861,7 +932,7 @@ main { padding-block: 36px 72px; }
   }));
 
   /* routing */
-  const VIEWS = ['plan', 'map', 'look', 'move', 'ideas'];
+  const VIEWS = ['plan', 'map', 'look', 'move', 'ideas', 'morning'];
   function route() {
     const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'plan';
     VIEWS.forEach(k => { document.getElementById('view-' + k).hidden = k !== v; });
@@ -870,6 +941,7 @@ main { padding-block: 36px 72px; }
     window.scrollTo(0, 0);
   }
   window.addEventListener('hashchange', route);
+  if (!isLocal) document.getElementById('local-note').hidden = false;
   route();
 })();
 </script>

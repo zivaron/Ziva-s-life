@@ -2,439 +2,676 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700&family=Assistant:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&family=Assistant:wght@400;600;700&display=swap">
 <style>
-/* Layout: one reading column, RTL. A two-layer "where it lives / how you find it" diagram, then the folder tree, the move map, the ways to find a photo, and the monthly routine. */
+/* Layout: a small website in four views (map, inside a folder, what moves where, ideas), switched by a sticky top nav. The map is a clickable treemap: tile area = number of photos. */
 :root {
-  --bg: #F4F6FA;
+  --bg: #F3F5F9;
   --surface: #FFFFFF;
-  --ink: #1B2232;
+  --ink: #18202F;
   --muted: #5A6377;
-  --line: #D7DCE6;
-  --sun: #C98408;
-  --sun-soft: #FFF2D2;
-  --sky: #2B67AB;
-  --sky-soft: #E3EDF9;
-  --leaf: #23805F;
-  --leaf-soft: #DFF2EA;
-  --rose: #B83C62;
-  --rose-soft: #FAE4EB;
+  --line: #DCE1EA;
+  --accent: #2F6DB5;
+  --accent-soft: #E3EDF9;
+  --ok: #1F8A63; --ok-soft: #DDF2E9;
+  --warn: #B87406; --warn-soft: #FFF0CF;
+  --chrome: #E9EDF3;
   --font-display: "Rubik", "Segoe UI", Arial, sans-serif;
   --font-body: "Assistant", "Segoe UI", Arial, sans-serif;
+  /* tile families: own surfaces, same in both themes */
+  --t-sky1: #2F6DB5; --t-sky2: #4F8FD8;
+  --t-leaf1: #1C8560; --t-leaf2: #3CB084;
+  --t-rose1: #B53F69; --t-rose2: #DA6A92;
+  --t-sun1: #D08A0B; --t-sun2: #F0B53D;
+  --t-plum1: #6650B5; --t-plum2: #8D75D9;
+  --t-clay1: #BF572B; --t-clay2: #E07C4B;
+  --t-slate1: #586374; --t-slate2: #7E899A;
+  --on-tile: #FFFFFF; --on-sun: #2A1B00;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #10131A; --surface: #191E28; --ink: #E8EBF2; --muted: #A2AABC; --line: #2C3341;
-    --sun: #F2B43F; --sun-soft: #3A2D10; --sky: #84B3EA; --sky-soft: #172739;
-    --leaf: #6FCDA8; --leaf-soft: #122C23; --rose: #EF8CAA; --rose-soft: #3A1925;
+    --bg: #0F1219; --surface: #181D27; --ink: #E8EBF2; --muted: #A1A9BB; --line: #2A3140;
+    --accent: #84B3EA; --accent-soft: #172739; --ok: #6FCDA8; --ok-soft: #122C23; --warn: #F2B43F; --warn-soft: #3A2D10;
+    --chrome: #222836;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #10131A; --surface: #191E28; --ink: #E8EBF2; --muted: #A2AABC; --line: #2C3341;
-  --sun: #F2B43F; --sun-soft: #3A2D10; --sky: #84B3EA; --sky-soft: #172739;
-  --leaf: #6FCDA8; --leaf-soft: #122C23; --rose: #EF8CAA; --rose-soft: #3A1925;
+  --bg: #0F1219; --surface: #181D27; --ink: #E8EBF2; --muted: #A1A9BB; --line: #2A3140;
+  --accent: #84B3EA; --accent-soft: #172739; --ok: #6FCDA8; --ok-soft: #122C23; --warn: #F2B43F; --warn-soft: #3A2D10;
+  --chrome: #222836;
   color-scheme: dark;
 }
 
+* { box-sizing: border-box; }
 body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 17px; line-height: 1.6; }
-.page {
-  max-width: 920px; margin: 0 auto;
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 40px 64px;
-  display: grid; gap: 56px;
-}
-h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.25; }
-h1 { font-size: clamp(30px, 6vw, 44px); font-weight: 700; }
-h2 { font-size: clamp(22px, 4vw, 28px); font-weight: 600; }
-h3 { font-size: 19px; font-weight: 600; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.2; }
 p { margin: 0; }
-.lead { font-size: 19px; color: var(--muted); max-width: 62ch; }
-.eyebrow { font-family: var(--font-display); font-size: 13px; font-weight: 600; letter-spacing: 0.06em; color: var(--sun); }
-section { display: grid; gap: 20px; }
-.section-head { display: grid; gap: 6px; }
-.section-head p { color: var(--muted); max-width: 62ch; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
 
-/* header */
-header { display: grid; gap: 14px; }
-.status { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
-.pill { font-size: 14px; font-weight: 600; padding: 4px 12px; border-radius: 999px; background: var(--leaf-soft); color: var(--leaf); }
-.pill.wait { background: var(--sun-soft); color: var(--sun); }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 
-/* two layers */
-.layers { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: stretch; }
-.layer { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px; display: grid; gap: 12px; align-content: start; min-width: 0; }
-.layer .kicker { font-family: var(--font-display); font-weight: 600; font-size: 14px; }
-.layer.pc .kicker { color: var(--sky); }
-.layer.cloud .kicker { color: var(--rose); }
-.layer ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
-.layer li { display: flex; gap: 10px; align-items: baseline; }
-.layer li::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 2px; transform: translateY(-2px); }
-.layer.pc li::before { background: var(--sky); }
-.layer.cloud li::before { background: var(--rose); border-radius: 50%; }
-.bridge { display: grid; place-items: center; color: var(--muted); font-family: var(--font-display); font-size: 14px; text-align: center; gap: 4px; }
-.bridge svg { width: 44px; height: 24px; }
-.rule { background: var(--sun-soft); border-radius: 12px; padding: 16px 20px; font-weight: 600; }
-.rule span { color: var(--sun); }
+/* top bar */
+.topbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9; background: var(--surface); border-bottom: 1px solid var(--line); }
+.topbar .wrap { display: flex; align-items: center; gap: 20px; padding-block: 10px; }
+.brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 700; font-size: 18px; white-space: nowrap; }
+.brand-mark { width: 30px; height: 30px; border-radius: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; padding: 4px; background: var(--ink); }
+.brand-mark i { border-radius: 2px; }
+.brand-mark i:nth-child(1) { background: var(--t-sky2); } .brand-mark i:nth-child(2) { background: var(--t-leaf2); }
+.brand-mark i:nth-child(3) { background: var(--t-rose2); } .brand-mark i:nth-child(4) { background: var(--t-sun2); }
+.nav { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; margin-inline-start: auto; }
+.nav::-webkit-scrollbar { display: none; }
+.nav a { text-decoration: none; color: var(--muted); font-family: var(--font-display); font-weight: 500; font-size: 15px; padding: 8px 14px; border-radius: 999px; white-space: nowrap; }
+.nav a:hover { color: var(--ink); background: var(--chrome); }
+.nav a[aria-current="page"] { background: var(--ink); color: var(--surface); }
 
-/* folder tree */
-.tree-wrap { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 24px 20px; overflow-x: auto; }
-.tree, .tree ul { list-style: none; margin: 0; padding: 0; }
-.tree ul { margin-right: 14px; padding-right: 22px; border-right: 2px solid var(--line); display: grid; gap: 10px; padding-top: 10px; }
-.tree li { position: relative; }
-.tree ul > li::before { content: ""; position: absolute; right: -22px; top: 15px; width: 16px; border-top: 2px solid var(--line); }
-.node { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-display); font-weight: 600; font-size: 16px; }
-.node .f { width: 20px; height: 15px; border-radius: 3px; position: relative; flex: none; background: var(--c, var(--sky)); }
-.node .f::before { content: ""; position: absolute; top: -4px; right: 0; width: 9px; height: 5px; border-radius: 2px 2px 0 0; background: var(--c, var(--sky)); }
-.node.root { font-size: 20px; }
-.c-inbox { --c: var(--sun); }
-.c-year { --c: var(--sky); }
-.c-trip { --c: var(--leaf); }
-.c-event { --c: var(--rose); }
-.c-proj { --c: var(--muted); }
-.tag { display: inline-block; font-size: 12px; font-weight: 700; padding: 1px 9px; border-radius: 999px; margin-inline-start: 6px; vertical-align: 2px; }
-.tag.ok { background: var(--leaf-soft); color: var(--leaf); }
-.tag.new { background: var(--sun-soft); color: var(--sun); }
-.tag.desk { background: var(--sky-soft); color: var(--sky); }
-.note { color: var(--muted); font-size: 15px; margin-top: 2px; max-width: 58ch; }
-.leaf-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
-.leaf-row span { font-size: 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 2px 8px; white-space: nowrap; }
-.naming { display: grid; gap: 6px; background: var(--sky-soft); border-radius: 12px; padding: 16px 20px; }
-.naming code { font-family: var(--font-display); font-weight: 600; font-size: 17px; color: var(--sky); }
+main { padding-block: 36px 72px; }
+.view { display: grid; gap: 28px; }
+.view-head { display: grid; gap: 10px; }
+.view-head h1 { font-size: clamp(28px, 5vw, 44px); font-weight: 800; letter-spacing: -0.01em; }
+.view-head p { color: var(--muted); font-size: 18px; max-width: 64ch; }
+.eyebrow { font-family: var(--font-display); font-size: 13px; font-weight: 600; letter-spacing: 0.06em; color: var(--accent); }
 
-/* move map */
-.map { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; min-width: 620px; }
-th, td { text-align: right; padding: 12px 16px; vertical-align: top; border-bottom: 1px solid var(--line); }
-th { font-family: var(--font-display); font-weight: 600; font-size: 14px; color: var(--muted); background: var(--bg); }
-tr:last-child td { border-bottom: 0; }
-td .from { font-weight: 700; }
-td .meta { display: block; color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
-td .to { font-family: var(--font-display); font-weight: 600; color: var(--leaf); }
-td .to.check { color: var(--sun); }
+/* stats */
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: grid; gap: 2px; }
+.stat b { font-family: var(--font-display); font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.stat span { color: var(--muted); font-size: 14px; }
+.stat .dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; margin-inline-end: 6px; }
 
-/* ways */
-.ways { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
-.way { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: grid; gap: 8px; align-content: start; }
-.way .where { font-size: 13px; font-weight: 700; justify-self: start; padding: 2px 10px; border-radius: 999px; }
-.where.pc { background: var(--sky-soft); color: var(--sky); }
-.where.cloud { background: var(--rose-soft); color: var(--rose); }
-.way p { color: var(--muted); font-size: 15px; }
-.way .ex { color: var(--ink); font-size: 15px; }
+/* treemap */
+.map-shell { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; align-items: start; }
+.map-card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 14px; display: grid; gap: 12px; min-width: 0; }
+.crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-family: var(--font-display); font-size: 15px; }
+.crumbs button { background: none; border: 0; padding: 4px 8px; border-radius: 8px; cursor: pointer; color: var(--accent); font-weight: 600; }
+.crumbs button:hover { background: var(--accent-soft); }
+.crumbs .here { font-weight: 700; padding: 4px 8px; }
+.crumbs .sep { color: var(--muted); }
+.back { margin-inline-start: auto; }
+.treemap { position: relative; height: 480px; border-radius: 12px; overflow: hidden; }
+.tile { position: absolute; padding: 3px; }
+.tile-in { width: 100%; height: 100%; border-radius: 10px; position: relative; overflow: hidden; color: var(--on-tile);
+  background: linear-gradient(155deg, var(--c1), var(--c2)); display: flex; flex-direction: column; justify-content: space-between; padding: 12px 14px;
+  border: 0; text-align: right; cursor: default; animation: pop .45s cubic-bezier(.2,.8,.2,1) both; animation-delay: var(--d, 0ms); }
+.tile-in.can-open { cursor: pointer; }
+.tile-in.can-open:hover { filter: brightness(1.07); }
+.tile-in.can-open:hover .open-hint { opacity: 1; transform: translateX(0); }
+.tile-in::after { content: ""; position: absolute; inset: 0; background: rgba(255,255,255,var(--lift, 0)); pointer-events: none; }
+.tile.sun .tile-in { color: var(--on-sun); }
+.tile-name { font-family: var(--font-display); font-weight: 700; font-size: clamp(14px, 1.6vw, 20px); line-height: 1.2; position: relative; z-index: 1; }
+.tile-count { font-family: var(--font-display); font-weight: 500; font-size: 14px; opacity: .9; font-variant-numeric: tabular-nums; position: relative; z-index: 1; }
+.tile-note { font-size: 13px; opacity: .88; position: relative; z-index: 1; max-width: 36ch; }
+.open-hint { font-size: 13px; font-weight: 700; opacity: .75; transition: opacity .2s, transform .2s; transform: translateX(4px); position: relative; z-index: 1; }
+.tile-badge { position: absolute; top: 10px; left: 10px; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: rgba(255,255,255,.25); z-index: 1; }
+.stack { position: absolute; left: 14px; bottom: 12px; width: 54px; height: 40px; z-index: 0; opacity: .35; }
+.stack i { position: absolute; inset: 0; border: 2px solid currentColor; border-radius: 5px; }
+.stack i:nth-child(1) { transform: rotate(-8deg) translate(-6px, 2px); }
+.stack i:nth-child(2) { transform: rotate(5deg) translate(4px, -2px); }
+.stack i:nth-child(3) { background: currentColor; opacity: .25; }
+.tile.small .tile-note, .tile.small .stack, .tile.small .open-hint, .tile.small .tile-badge { display: none; }
+.tile.tiny .tile-count { display: none; }
+.tile.tiny .tile-in { padding: 6px 8px; }
+.tile.tiny .tile-name { font-size: 12px; }
+@keyframes pop { from { opacity: 0; transform: scale(.92); } to { opacity: 1; transform: none; } }
 
-/* big ideas */
-.ideas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-.idea { border-right: 4px solid var(--sun); background: var(--surface); border-radius: 4px 12px 12px 4px; padding: 16px 18px; display: grid; gap: 6px; }
+.side { display: grid; gap: 12px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 18px; display: grid; gap: 10px; }
+.panel h3 { font-size: 20px; }
+.panel .big { font-family: var(--font-display); font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; }
+.panel p { color: var(--muted); font-size: 15px; }
+.swatch { width: 14px; height: 14px; border-radius: 4px; display: inline-block; vertical-align: -2px; margin-inline-end: 6px; }
+.legend { display: grid; gap: 8px; font-size: 15px; }
+.legend div { display: flex; align-items: center; }
+.rule-card { background: var(--ink); color: var(--surface); border-radius: 18px; padding: 18px; display: grid; gap: 6px; }
+.rule-card b { font-family: var(--font-display); font-size: 17px; }
+.rule-card p { opacity: .85; font-size: 15px; }
+
+/* explorer mock */
+.toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.seg { display: inline-flex; background: var(--chrome); border-radius: 999px; padding: 4px; gap: 2px; }
+.seg button { border: 0; background: none; padding: 7px 14px; border-radius: 999px; cursor: pointer; font-family: var(--font-display); font-weight: 500; font-size: 14px; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.seg-label { font-family: var(--font-display); font-size: 14px; color: var(--muted); }
+.window { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; box-shadow: 0 18px 50px -24px rgba(16,24,40,.35); }
+.win-bar { display: flex; align-items: center; gap: 12px; background: var(--chrome); padding: 10px 14px; border-bottom: 1px solid var(--line); }
+.win-dots { display: flex; gap: 6px; }
+.win-dots i { width: 11px; height: 11px; border-radius: 50%; background: var(--line); }
+.win-path { flex: 1; min-width: 0; background: var(--surface); border-radius: 8px; padding: 5px 12px; font-family: var(--font-display); font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.win-body { display: grid; grid-template-columns: 220px minmax(0, 1fr); min-height: 520px; }
+.win-side { border-left: 1px solid var(--line); padding: 14px 10px; display: grid; gap: 2px; align-content: start; background: color-mix(in srgb, var(--chrome) 45%, var(--surface)); }
+.win-side div { display: flex; align-items: center; gap: 9px; padding: 7px 10px; border-radius: 8px; font-family: var(--font-display); font-size: 14px; font-weight: 500; }
+.win-side div.on { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.win-side .sub { padding-inline-start: 30px; font-weight: 400; color: var(--muted); }
+.fi { width: 18px; height: 14px; border-radius: 3px; position: relative; flex: none; background: linear-gradient(155deg, var(--c1), var(--c2)); }
+.fi::before { content: ""; position: absolute; top: -3px; right: 0; width: 8px; height: 4px; border-radius: 2px 2px 0 0; background: var(--c1); }
+.win-main { padding: 18px; display: grid; gap: 18px; align-content: start; min-width: 0; }
+.win-main h3 { font-size: 15px; color: var(--muted); font-weight: 600; }
+.folders { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+.folder { border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 6px; background: var(--surface); }
+.folder .fi { width: 34px; height: 26px; border-radius: 5px; }
+.folder .fi::before { width: 14px; height: 6px; top: -5px; }
+.folder b { font-family: var(--font-display); font-weight: 600; font-size: 15px; line-height: 1.25; }
+.folder span { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.grid { --t: 120px; display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--t), 1fr)); gap: 8px; }
+.thumb { aspect-ratio: 4 / 3; border-radius: 8px; position: relative; overflow: hidden; background: linear-gradient(180deg, var(--s1), var(--s2)); animation: pop .4s ease both; animation-delay: var(--d, 0ms); max-width: 100%; }
+.thumb .sun { position: absolute; width: 22%; aspect-ratio: 1; border-radius: 50%; background: var(--sn); left: var(--sx); top: var(--sy); opacity: .95; }
+.thumb .hill { position: absolute; inset: auto 0 0 0; height: var(--h); background: var(--g); clip-path: polygon(0 45%, 18% 20%, 35% 52%, 55% 10%, 75% 48%, 100% 25%, 100% 100%, 0 100%); }
+.thumb .hill.b { height: calc(var(--h) * .6); background: var(--g2); clip-path: polygon(0 40%, 25% 65%, 50% 30%, 80% 60%, 100% 35%, 100% 100%, 0 100%); }
+.thumb .vid { position: absolute; bottom: 6px; right: 6px; font-size: 11px; font-weight: 700; background: rgba(0,0,0,.55); color: #fff; padding: 1px 7px; border-radius: 999px; font-variant-numeric: tabular-nums; }
+.thumb .fname { position: absolute; top: 6px; right: 6px; font-size: 11px; color: #fff; background: rgba(0,0,0,.35); padding: 1px 6px; border-radius: 5px; display: none; }
+.grid.large .thumb .fname { display: block; }
+.thumb .star { position: absolute; top: 6px; left: 6px; width: 18px; height: 18px; background: #FFD34E; clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
+
+/* google view */
+.people { display: flex; flex-wrap: wrap; gap: 18px; }
+.person { display: grid; justify-items: center; gap: 6px; font-family: var(--font-display); font-weight: 600; font-size: 14px; }
+.avatar { width: 76px; height: 76px; border-radius: 50%; display: grid; place-items: center; font-size: 28px; font-weight: 700; color: #fff; background: linear-gradient(150deg, var(--c1), var(--c2)); box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px var(--line); }
+.person span { color: var(--muted); font-weight: 400; font-size: 13px; }
+.places { position: relative; height: 230px; border-radius: 12px; overflow: hidden; background:
+  radial-gradient(circle at 30% 40%, color-mix(in srgb, var(--ok) 18%, transparent) 0 18%, transparent 19%),
+  radial-gradient(circle at 70% 60%, color-mix(in srgb, var(--ok) 14%, transparent) 0 22%, transparent 23%),
+  var(--accent-soft); }
+.pin { position: absolute; transform: translate(50%, -50%); display: grid; justify-items: center; gap: 2px; font-family: var(--font-display); font-size: 12px; font-weight: 600; }
+.pin i { width: var(--r); height: var(--r); border-radius: 50%; background: var(--t-rose1); border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25); animation: pulse 2.8s ease-in-out infinite; animation-delay: var(--d, 0s); }
+@keyframes pulse { 50% { transform: scale(1.15); } }
+.albums { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.album { border-radius: 12px; overflow: hidden; border: 1px solid var(--line); background: var(--surface); }
+.album .cover { height: 110px; display: grid; grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; gap: 3px; }
+.album .cover .thumb { aspect-ratio: auto; border-radius: 0; animation: none; }
+.album .cover .thumb:first-child { grid-row: span 2; }
+.album div.meta { padding: 10px 12px; display: grid; }
+.album b { font-family: var(--font-display); font-weight: 600; }
+.album span { color: var(--muted); font-size: 13px; }
+
+/* move */
+.legend-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.pill { font-size: 13px; font-weight: 700; padding: 3px 12px; border-radius: 999px; white-space: nowrap; }
+.pill.ok { background: var(--ok-soft); color: var(--ok); }
+.pill.go { background: var(--accent-soft); color: var(--accent); }
+.pill.ask { background: var(--warn-soft); color: var(--warn); }
+.moves { display: grid; gap: 10px; }
+.move { display: grid; grid-template-columns: minmax(0, 1.2fr) 56px minmax(0, 1fr) minmax(0, 1.3fr); gap: 14px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+.from { display: grid; gap: 2px; min-width: 0; }
+.from small { color: var(--muted); font-size: 13px; }
+.from b { font-family: var(--font-display); font-weight: 600; }
+.arrow { height: 2px; background: var(--line); position: relative; }
+.arrow::after { content: ""; position: absolute; left: -2px; top: -5px; border: 6px solid transparent; border-right-color: var(--muted); border-left: 0; }
+.to { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.to .fi { width: 26px; height: 20px; }
+.to b { font-family: var(--font-display); font-weight: 700; }
+.move .why { color: var(--muted); font-size: 15px; display: grid; gap: 6px; justify-items: start; }
+.count { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13px; }
+
+/* ideas */
+.ideas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.idea { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.idea .stage { height: 170px; position: relative; overflow: hidden; background: var(--chrome); }
+.idea .body { padding: 16px 18px 18px; display: grid; gap: 10px; flex: 1; align-content: start; }
+.idea h3 { font-size: 19px; }
 .idea p { color: var(--muted); font-size: 15px; }
+.idea .need { font-size: 14px; }
+.idea .need b { color: var(--ink); }
+.say { display: flex; gap: 8px; align-items: center; background: var(--bg); border: 1px dashed var(--line); border-radius: 10px; padding: 8px 10px; margin-top: auto; }
+.say span { flex: 1; min-width: 0; font-size: 14px; }
+.say button { border: 0; background: var(--ink); color: var(--surface); border-radius: 8px; padding: 6px 12px; font-family: var(--font-display); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.idea .status { justify-self: start; }
 
-/* flow */
-.flow { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; counter-reset: step; }
-.flow li { counter-increment: step; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 14px; display: grid; gap: 6px; align-content: start; position: relative; }
-.flow li::before { content: counter(step); font-family: var(--font-display); font-weight: 700; font-size: 14px; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--sky-soft); color: var(--sky); }
-.flow li b { font-family: var(--font-display); font-weight: 600; }
-.flow li span { color: var(--muted); font-size: 14px; }
-.flow .auto { font-size: 12px; font-weight: 700; color: var(--leaf); }
+/* idea stages */
+.st-route svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.st-route .path { fill: none; stroke: var(--t-rose1); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 520; stroke-dashoffset: 520; animation: draw 5s ease-in-out infinite; }
+.st-route .city { fill: var(--surface); stroke: var(--t-rose1); stroke-width: 3; }
+.st-route text { font-family: var(--font-display); font-size: 12px; font-weight: 600; fill: var(--ink); }
+@keyframes draw { 0% { stroke-dashoffset: 520; } 60%, 100% { stroke-dashoffset: 0; } }
+.st-orbit { display: grid; place-items: center; }
+.st-orbit .core { width: 64px; height: 64px; border-radius: 50%; background: radial-gradient(circle, #FFE08A, var(--t-sun1)); display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; color: var(--on-sun); z-index: 1; box-shadow: 0 0 30px rgba(240,181,61,.6); }
+.st-orbit .ring { position: absolute; width: 150px; height: 150px; border-radius: 50%; border: 1px dashed var(--line); animation: spin 18s linear infinite; }
+.st-orbit .ring i { position: absolute; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: #fff; font-style: normal; font-family: var(--font-display); }
+.st-orbit .ring i:nth-child(1) { top: -15px; left: 60px; background: var(--t-sky1); }
+.st-orbit .ring i:nth-child(2) { top: 40px; right: -15px; background: var(--t-leaf1); }
+.st-orbit .ring i:nth-child(3) { bottom: 0; right: 15px; background: var(--t-rose1); }
+.st-orbit .ring i:nth-child(4) { bottom: 0; left: 15px; background: var(--t-plum1); }
+.st-orbit .ring i:nth-child(5) { top: 40px; left: -15px; background: var(--t-clay1); }
+@keyframes spin { to { transform: rotate(360deg); } }
+.st-stack { display: grid; place-items: center; }
+.st-stack .card { position: absolute; width: 120px; height: 90px; border-radius: 8px; box-shadow: 0 8px 20px rgba(0,0,0,.18); animation: shuffle 6s ease-in-out infinite; }
+.st-stack .card:nth-child(1) { animation-delay: 0s; } .st-stack .card:nth-child(2) { animation-delay: -2s; } .st-stack .card:nth-child(3) { animation-delay: -4s; }
+@keyframes shuffle { 0% { transform: translateX(0) rotate(-6deg); z-index: 3; } 33% { transform: translateX(-70px) rotate(4deg); z-index: 1; } 66% { transform: translateX(60px) rotate(8deg); z-index: 2; } 100% { transform: translateX(0) rotate(-6deg); z-index: 3; } }
+.st-flip { display: grid; place-items: center; perspective: 700px; }
+.flipcard { width: 150px; height: 100px; position: relative; transform-style: preserve-3d; animation: flip 5s ease-in-out infinite; }
+.flipcard div { position: absolute; inset: 0; border-radius: 10px; display: grid; place-items: center; text-align: center; padding: 8px; font-family: var(--font-display); font-weight: 600; font-size: 14px; backface-visibility: hidden; }
+.flipcard .f { background: var(--surface); border: 2px solid var(--t-plum1); color: var(--ink); }
+.flipcard .b { background: var(--t-plum1); color: #fff; transform: rotateY(180deg); }
+@keyframes flip { 0%, 35% { transform: rotateY(0); } 50%, 85% { transform: rotateY(180deg); } 100% { transform: rotateY(360deg); } }
+.st-dawn svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.st-dawn .sunrise { fill: #F0B53D; animation: rise 6s ease-in-out infinite; }
+.st-dawn .ridge { fill: none; stroke: var(--ink); stroke-width: 2.5; stroke-linecap: round; }
+@keyframes rise { 0% { transform: translateY(40px); } 50%, 100% { transform: translateY(0); } }
+.st-book { display: grid; place-items: center; perspective: 900px; }
+.book { width: 200px; height: 120px; position: relative; }
+.book .page { position: absolute; top: 0; width: 100px; height: 120px; background: var(--surface); border: 1px solid var(--line); border-radius: 4px; display: grid; gap: 4px; padding: 8px; align-content: start; }
+.book .page.l { left: 0; } .book .page.r { right: 0; }
+.book .page.turn { right: 0; transform-origin: left center; animation: turn 4.5s ease-in-out infinite; background: var(--surface); }
+.book .page .ph { height: 50px; border-radius: 3px; }
+.book .page .ln { height: 5px; border-radius: 3px; background: var(--line); }
+@keyframes turn { 0%, 20% { transform: rotateY(0); } 60%, 100% { transform: rotateY(-180deg); } }
 
-/* next steps */
-.next { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-.box { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; display: grid; gap: 10px; align-content: start; }
-.box ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
-.box li { display: grid; grid-template-columns: 22px 1fr; gap: 8px; }
-.mark { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; margin-top: 3px; }
-.mark.done { background: var(--leaf-soft); color: var(--leaf); }
-.mark.todo { border: 2px solid var(--line); color: var(--muted); }
 .foot { color: var(--muted); font-size: 14px; }
 
-@media (max-width: 760px) {
-  .layers { grid-template-columns: 1fr; }
-  .bridge svg { transform: rotate(-90deg); }
-  .ways, .ideas, .next { grid-template-columns: 1fr; }
-  .flow { grid-template-columns: 1fr; }
+@media (max-width: 900px) {
+  .map-shell { grid-template-columns: 1fr; }
+  .ideas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .win-body { grid-template-columns: 1fr; }
+  .win-side { display: none; }
+  .move { grid-template-columns: minmax(0, 1fr) 40px minmax(0, 1fr); }
+  .move .why { grid-column: 1 / -1; }
 }
-@media (min-width: 761px) and (max-width: 900px) {
-  .ways { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 620px) {
+  .brand span { display: none; }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .treemap { height: 560px; }
+  .ideas { grid-template-columns: 1fr; }
+  .move { grid-template-columns: 1fr; gap: 8px; }
+  .arrow { width: 40px; transform: rotate(-90deg); margin: 6px 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .st-route .path { stroke-dashoffset: 0; }
 }
 </style>
 
-<div class="page" dir="rtl" lang="he">
-
-  <header>
-    <span class="eyebrow">התמונות של זיוה · נובמבר 2026</span>
-    <h1>מפת סידור התמונות</h1>
-    <p class="lead">איך לסדר כ-14,000 תמונות וסרטונים כך שכל תמונה תמצא בשנייה: לפי זמן, טיולים, אירועים, אנשים ומקומות. בלי לשכפל אף תמונה.</p>
-    <div class="status">
-      <span class="pill">סודר לפי שנים</span>
-      <span class="pill">נמחקו 13,332 כפילויות (189 ג'יגה)</span>
-      <span class="pill">מגובה ב-Google Photos</span>
-      <span class="pill wait">הבא בתור: תיקיות שולחן העבודה</span>
+<div dir="rtl" lang="he">
+  <header class="topbar">
+    <div class="wrap">
+      <div class="brand"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>התמונות של זיוה</span></div>
+      <nav class="nav" aria-label="עמודי האתר">
+        <a href="#map" data-view="map">המפה</a>
+        <a href="#look" data-view="look">ככה זה ייראה</a>
+        <a href="#move" data-view="move">מה עובר לאן</a>
+        <a href="#ideas" data-view="ideas">רעיונות בשבילך</a>
+      </nav>
     </div>
   </header>
 
-  <section>
-    <div class="section-head">
-      <h2>הרעיון המרכזי: בית אחד, הרבה דרכים להגיע</h2>
-      <p>תמונה יכולה לגור רק בתיקייה אחת. אבל יש לה גם תאריך, גם אנשים, גם מקום. לכן מחלקים את העבודה בין שני מקומות.</p>
-    </div>
-    <div class="layers">
-      <div class="layer pc">
-        <span class="kicker">במחשב · איפה התמונה גרה</span>
-        <h3>תיקיות</h3>
-        <ul>
-          <li>לפי שנים, לחיי היומיום</li>
-          <li>טיולים, תיקייה לכל טיול</li>
-          <li>אירועים משפחתיים</li>
-          <li>פרויקטים, כמו האיורים לספר</li>
-        </ul>
-      </div>
-      <div class="bridge" aria-hidden="true">
-        <svg viewBox="0 0 44 24"><path d="M40 12H6M14 4 6 12l8 8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span>אותן תמונות</span>
-      </div>
-      <div class="layer cloud">
-        <span class="kicker">ב-Google Photos · איך מוצאים אותה</span>
-        <h3>תגיות ואלבומים</h3>
-        <ul>
-          <li>אנשים: מזהה פנים לבד</li>
-          <li>מקומות: מפה, לפי המיקום שבתמונה</li>
-          <li>אלבומים: "הכי טובות", אלבומים משותפים</li>
-          <li>חיפוש במילים: "ים", "עוגה", "כלב"</li>
-        </ul>
-      </div>
-    </div>
-    <p class="rule"><span>כלל אחד לזכור:</span> מעבירים תמונה לתיקייה אחת בלבד. אנשים ומקומות מסמנים ב-Google Photos, לא בתיקיות.</p>
-  </section>
+  <main class="wrap">
 
-  <section>
-    <div class="section-head">
-      <h2>מבנה התיקיות המומלץ</h2>
-      <p>חמש תיקיות ראשיות בתוך "תמונות". שנים כבר קיימות; השאר נבנות מתיקיות שכבר יש לך בשולחן העבודה.</p>
-    </div>
-    <div class="tree-wrap">
-      <ul class="tree">
-        <li>
-          <span class="node root c-year"><i class="f"></i>תמונות</span>
-          <ul>
-            <li>
-              <span class="node c-inbox"><i class="f"></i>00 לסדר</span><span class="tag new">חדש</span>
-              <p class="note">תיבת דואר נכנס. כל תמונה חדשה נכנסת לכאן, ופעם בחודש ממיינים. ה-00 שומר אותה ראשונה ברשימה.</p>
-            </li>
-            <li>
-              <span class="node c-year"><i class="f"></i>שנים</span><span class="tag ok">קיים</span>
-              <p class="note">חיי היומיום: נכדות, ארוחות, טיולים קצרים. כל מה שאינו טיול או אירוע גדול.</p>
-              <ul>
-                <li><span class="node c-year"><i class="f"></i>2026</span>
-                  <div class="leaf-row"><span>01 ינואר</span><span>02 פברואר</span><span>…</span><span>11 נובמבר</span></div>
-                  <p class="note">בשנים עמוסות (2024 עד 2026, עם אלפי תמונות) כדאי לחלק גם לחודשים.</p>
-                </li>
-                <li><span class="node c-year"><i class="f"></i>2025 · 2024 · … · 2016</span></li>
-              </ul>
-            </li>
-            <li>
-              <span class="node c-trip"><i class="f"></i>טיולים</span><span class="tag desk">משולחן העבודה</span>
-              <ul>
-                <li><span class="node c-trip"><i class="f"></i>2026-02 הודו</span><p class="note">כולל דלהי, ג'איפור, רישיקש, מקלאוד גאנג'. תת-תיקייה לכל עיר, אם רוצים.</p></li>
-                <li><span class="node c-trip"><i class="f"></i>2023-10 לונדון סוכות</span></li>
-                <li><span class="node c-trip"><i class="f"></i>2016 יפן</span></li>
-                <li><span class="node c-trip"><i class="f"></i>כרתים · מאוריציוס · …</span><p class="note">לכל טיול מוסיפים שנה וחודש בתחילת השם, והרשימה מסתדרת לבד לפי הזמן.</p></li>
-              </ul>
-            </li>
-            <li>
-              <span class="node c-event"><i class="f"></i>אירועים משפחתיים</span><span class="tag new">חדש</span>
-              <ul>
-                <li><span class="node c-event"><i class="f"></i>2026-07 לונדון · הולדת סאני</span></li>
-                <li><span class="node c-event"><i class="f"></i>יום הולדת בחוף · סאני ואמא</span></li>
-                <li><span class="node c-event"><i class="f"></i>חתונה וחינה</span></li>
-              </ul>
-            </li>
-            <li>
-              <span class="node c-proj"><i class="f"></i>פרויקטים</span><span class="tag new">חדש</span>
-              <p class="note">תמונות שהן חומר עבודה, לא זיכרון: איורים וסקיצות לספר של סאני, סרטונים מ-Canva, תמונות למצגות.</p>
-            </li>
-            <li>
-              <span class="node c-inbox"><i class="f"></i>לבדיקה ומחיקה</span><span class="tag new">חדש</span>
-              <p class="note">צילומי מסך, קבלות, תמונות שהגיעו בוואטסאפ. עוברים פעם בכמה חודשים, ומוחקים מה שלא צריך.</p>
-            </li>
-          </ul>
-        </li>
-      </ul>
-    </div>
-    <div class="naming">
-      <h3>איך קוראים לתיקייה</h3>
-      <p>שנה, מקף, חודש, רווח, ושם במילים שלך:</p>
-      <p><code>2026-02 הודו</code> &nbsp;·&nbsp; <code>2023-10 לונדון סוכות</code></p>
-      <p class="note">כשהתאריך בהתחלה, המחשב מסדר את התיקיות לבד מהישן לחדש.</p>
-    </div>
-  </section>
+    <!-- MAP -->
+    <section class="view" id="view-map">
+      <div class="view-head">
+        <span class="eyebrow">המבנה החדש · נובמבר 2026</span>
+        <h1>כל התמונות שלך, במבט אחד</h1>
+        <p>כל ריבוע הוא תיקייה. ככל שיש בה יותר תמונות, הריבוע גדול יותר. לחצי על ריבוע כדי להיכנס פנימה.</p>
+      </div>
+      <div class="stats" id="stats"></div>
+      <div class="map-shell">
+        <div class="map-card">
+          <div class="crumbs" id="crumbs"></div>
+          <div class="treemap" id="treemap" role="group" aria-label="מפת התיקיות"></div>
+        </div>
+        <aside class="side">
+          <div class="panel" id="info"></div>
+          <div class="panel">
+            <h3>מה הצבעים אומרים</h3>
+            <div class="legend" id="legend"></div>
+          </div>
+          <div class="rule-card">
+            <b>כלל אחד לזכור</b>
+            <p>כל תמונה גרה בתיקייה אחת בלבד. אנשים ומקומות מוצאים ב-Google Photos, בלי לשכפל.</p>
+          </div>
+        </aside>
+      </div>
+      <p class="foot">הגודל לפי מספר הקבצים, כפי שנספרו במחשב ב-11.11.2026. החלוקה לחודשים לפי תאריך הקובץ.</p>
+    </section>
 
-  <section>
-    <div class="section-head">
-      <h2>מה עובר לאן</h2>
-      <p>התיקיות שיש לך היום, ולאן כל אחת שייכת במבנה החדש. שום דבר עוד לא הוזז.</p>
-    </div>
-    <div class="map">
-      <table>
-        <thead><tr><th>היום</th><th>לאן</th><th>הערה</th></tr></thead>
-        <tbody>
-          <tr>
-            <td><span class="from">תמונות ← 2016 עד 2026</span><span class="meta">11,261 קבצים</span></td>
-            <td><span class="to">שנים</span></td>
-            <td>כבר מסודר. נשאר רק לחלק לחודשים בשנים העמוסות.</td>
-          </tr>
-          <tr>
-            <td><span class="from">תמונות ← הודו</span><span class="meta">1,311 קבצים · פברואר עד מרץ 2026</span></td>
-            <td><span class="to">טיולים ← 2026-02 הודו</span></td>
-            <td>אלה עותקים של תמונות שנמצאות גם בתיקיות השנים. מחליטים על זה יחד עם נושא הכפילויות.</td>
-          </tr>
-          <tr>
-            <td><span class="from">שולחן העבודה ← טיולים</span><span class="meta">2,146 קבצים · 2010 עד 2026</span></td>
-            <td><span class="to">טיולים</span></td>
-            <td>כבר מחולק לפי טיול (דלהי, יפן, כרתים, לונדון סוכות 23, מאוריציוס ועוד). מוסיפים שנה וחודש לשם. ייתכן שדלהי ותיקיית הודו הן אותו טיול.</td>
-          </tr>
-          <tr>
-            <td><span class="from">שולחן העבודה ← תמונות חוף, יום הולדת</span><span class="meta">432 תמונות</span></td>
-            <td><span class="to">אירועים משפחתיים</span></td>
-            <td>מחולק ל-photos-part1 ו-part2. כדאי לאחד לתיקייה אחת.</td>
-          </tr>
-          <tr>
-            <td><span class="from">שולחן העבודה ← פל מאי 2018</span><span class="meta">838 קבצים · 2017 עד 2020</span></td>
-            <td><span class="to check">לבדוק</span></td>
-            <td>חצי תמונות וחצי סרטונים. צריך לפתוח ולהחליט: אירוע, טיול או עבודה.</td>
-          </tr>
-          <tr>
-            <td><span class="from">שולחן העבודה ← חתונה וחינה - עותק</span><span class="meta">688 קבצים, רק 38 מהם תמונות</span></td>
-            <td><span class="to check">לבדוק</span></td>
-            <td>רובה מסמכים ועותקים של תיקיות אחרות (ספר סאני, פיקוח, פנסיה). את התמונות מעבירים לאירועים, את השאר בודקים בנפרד.</td>
-          </tr>
-          <tr>
-            <td><span class="from">תמונות ← סאני</span><span class="meta">61 תמונות מ-2023</span></td>
-            <td><span class="to check">להחליט</span></td>
-            <td>אם אלה תמונות של אדם: שנים, ומסמנים אותה ב"אנשים". אם הן לספר: פרויקטים.</td>
-          </tr>
-          <tr>
-            <td><span class="from">שולחן העבודה ← canva, סאני ספר</span><span class="meta">כמה תמונות וסרטונים</span></td>
-            <td><span class="to">פרויקטים</span></td>
-            <td>המסמכים נשארים איפה שהם. רק התמונות עוברות.</td>
-          </tr>
-          <tr>
-            <td><span class="from">תמונות ← Screenshots, Saved Pictures, תמונות אייפון פברואר 25</span><span class="meta">ריקות או כמעט ריקות</span></td>
-            <td><span class="to">לבדיקה ומחיקה</span></td>
-            <td>אפשר למחוק את התיקיות הריקות.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="foot">תיקיות המסמכים בשולחן העבודה (לימודים, ברידג', קורות חיים, לוגותראפיה, פיקוח) אינן חלק מהתמונות, ולא נכללו כאן.</p>
-  </section>
+    <!-- LOOK -->
+    <section class="view" id="view-look" hidden>
+      <div class="view-head">
+        <span class="eyebrow">הדמיה</span>
+        <h1>ככה תיראה תיקייה מסודרת</h1>
+        <p>אותן תמונות, בשני מקומות: במחשב הן גרות בתיקיות, ב-Google Photos מוצאים אותן לפי אנשים, מקומות ואלבומים. אפשר לשנות את גודל התמונות כדי לראות איך זה נראה.</p>
+      </div>
+      <div class="toolbar">
+        <span class="seg-label">איפה:</span>
+        <div class="seg" id="seg-where">
+          <button type="button" id="where-pc" aria-pressed="true">במחשב</button>
+          <button type="button" id="where-cloud" aria-pressed="false">ב-Google Photos</button>
+        </div>
+        <span class="seg-label">גודל תמונות:</span>
+        <div class="seg" id="seg-size">
+          <button type="button" id="size-s" aria-pressed="false">קטן</button>
+          <button type="button" id="size-m" aria-pressed="true">בינוני</button>
+          <button type="button" id="size-l" aria-pressed="false">גדול</button>
+        </div>
+      </div>
 
-  <section>
-    <div class="section-head">
-      <h2>שש דרכים למצוא תמונה</h2>
-      <p>שלוש בתיקיות במחשב, שלוש ב-Google Photos. כולן על אותן תמונות.</p>
-    </div>
-    <div class="ways">
-      <div class="way">
-        <span class="where pc">במחשב</span>
-        <h3>לפי זמן</h3>
-        <p>"מה עשינו בקיץ שעבר?" פותחים את השנה ואת החודש.</p>
-        <p class="ex">שנים ← 2025 ← 08 אוגוסט</p>
+      <div class="window" id="win-pc">
+        <div class="win-bar">
+          <div class="win-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div class="win-path">תמונות › טיולים › 2026-02 הודו</div>
+        </div>
+        <div class="win-body">
+          <div class="win-side" aria-hidden="true">
+            <div><i class="fi" style="--c1:var(--t-sun1);--c2:var(--t-sun2)"></i>00 לסדר</div>
+            <div><i class="fi" style="--c1:var(--t-sky1);--c2:var(--t-sky2)"></i>שנים</div>
+            <div class="on"><i class="fi" style="--c1:var(--t-leaf1);--c2:var(--t-leaf2)"></i>טיולים</div>
+            <div class="sub on">2026-02 הודו</div>
+            <div class="sub">2016 יפן</div>
+            <div class="sub">כרתים</div>
+            <div class="sub">מאוריציוס</div>
+            <div><i class="fi" style="--c1:var(--t-rose1);--c2:var(--t-rose2)"></i>אירועים משפחתיים</div>
+            <div><i class="fi" style="--c1:var(--t-plum1);--c2:var(--t-plum2)"></i>פרויקטים</div>
+            <div><i class="fi" style="--c1:var(--t-slate1);--c2:var(--t-slate2)"></i>לבדיקה ומחיקה</div>
+          </div>
+          <div class="win-main">
+            <h3>תיקיות לפי עיר</h3>
+            <div class="folders" id="india-folders"></div>
+            <h3>רישיקש · 220 תמונות</h3>
+            <div class="grid" id="grid-pc"></div>
+          </div>
+        </div>
       </div>
-      <div class="way">
-        <span class="where pc">במחשב</span>
-        <h3>לפי טיול</h3>
-        <p>כל טיול בתיקייה משלו, עם שנה וחודש בשם.</p>
-        <p class="ex">טיולים ← 2016 יפן</p>
-      </div>
-      <div class="way">
-        <span class="where pc">במחשב</span>
-        <h3>לפי אירוע</h3>
-        <p>לידות, חתונות, ימי הולדת, חגים גדולים.</p>
-        <p class="ex">אירועים ← 2026-07 הולדת סאני</p>
-      </div>
-      <div class="way">
-        <span class="where cloud">Google Photos</span>
-        <h3>לפי אנשים</h3>
-        <p>Google מזהה את הפנים לבד. נותנים שם פעם אחת, ואז מחפשים "זני" ורואים את כל התמונות שלה, מכל השנים.</p>
-        <p class="ex">אוספים ← אנשים</p>
-      </div>
-      <div class="way">
-        <span class="where cloud">Google Photos</span>
-        <h3>לפי מקום</h3>
-        <p>מפה של כל התמונות, לפי המיקום שהטלפון שמר. לתמונות מוואטסאפ אין מיקום.</p>
-        <p class="ex">אוספים ← מקומות</p>
-      </div>
-      <div class="way">
-        <span class="where cloud">Google Photos</span>
-        <h3>הכי טובות</h3>
-        <p>לוחצים על הכוכב בתמונות שאוהבים. בסוף השנה יש אלבום מוכן של הרגעים הכי יפים.</p>
-        <p class="ex">אלבום "הכי טובות 2026"</p>
-      </div>
-    </div>
-  </section>
 
-  <section>
-    <div class="section-head">
-      <h2>רעיונות גדולים יותר</h2>
-      <p>מעבר לסדר, דברים שהתמונות יכולות לתת לך ולמשפחה.</p>
-    </div>
-    <div class="ideas">
-      <div class="idea">
-        <h3>אלבום משותף שמתמלא לבד</h3>
-        <p>ב-Google Photos בוחרים אנשים, והאלבום מוסיף לבד כל תמונה חדשה שלהם. משתפים אותו עם הבת בלונדון, והיא רואה כל תמונה של הנכדות בלי שתשלחי.</p>
+      <div class="window" id="win-cloud" hidden>
+        <div class="win-bar">
+          <div class="win-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div class="win-path">photos.google.com · אוספים</div>
+        </div>
+        <div class="win-main">
+          <h3>אנשים · Google מזהה את הפנים לבד, את נותנת שם פעם אחת</h3>
+          <div class="people">
+            <div class="person"><div class="avatar" style="--c1:var(--t-sun1);--c2:var(--t-sun2)">ס</div>סאני<span>נכדה</span></div>
+            <div class="person"><div class="avatar" style="--c1:var(--t-rose1);--c2:var(--t-rose2)">ז</div>זני<span>נכדה</span></div>
+            <div class="person"><div class="avatar" style="--c1:var(--t-sky1);--c2:var(--t-sky2)">ת</div>תובלי<span>בן</span></div>
+            <div class="person"><div class="avatar" style="--c1:var(--t-leaf1);--c2:var(--t-leaf2)">ב</div>הבת<span>לונדון</span></div>
+            <div class="person"><div class="avatar" style="--c1:var(--t-plum1);--c2:var(--t-plum2)">ז</div>זיוה<span>את</span></div>
+          </div>
+          <h3>מקומות · מפה לפי המיקום שהטלפון שמר</h3>
+          <div class="places" id="places"></div>
+          <h3>אלבומים</h3>
+          <div class="albums" id="albums"></div>
+          <h3>הכי טובות · מסמנים בכוכב</h3>
+          <div class="grid" id="grid-cloud"></div>
+        </div>
       </div>
-      <div class="idea">
-        <h3>ספר תמונות שנתי לנכדות</h3>
-        <p>מהאלבום "הכי טובות" מזמינים ספר מודפס או לוח שנה. מתנה לחג, ומסורת שהנכדות יגדלו איתה.</p>
-      </div>
-      <div class="idea">
-        <h3>להציל את התמונות הישנות</h3>
-        <p>בתיקיית הטיולים יש תמונות כבר מ-2010. תמונות נייר מלפני כן אפשר לסרוק בטלפון עם האפליקציה החינמית PhotoScan של Google, והן נכנסות לאותו סדר.</p>
-      </div>
-      <div class="idea">
-        <h3>זיכרונות בנפרד ממסמכים</h3>
-        <p>מרשמים, קבלות, צילומי מסך ותעודות לא שייכים לאלבום המשפחתי. מעבירים אותם ל"לבדיקה ומחיקה", או לתיקיית המסמכים.</p>
-      </div>
-    </div>
-  </section>
+      <p class="foot">התמונות כאן הן איורים להמחשה. השמות, המקומות והמספרים אמיתיים.</p>
+    </section>
 
-  <section>
-    <div class="section-head">
-      <h2>השגרה: עשר דקות בחודש</h2>
-      <p>ככה התמונות החדשות נשארות מסודרות, בלי לחזור לבלגן.</p>
-    </div>
-    <ol class="flow">
-      <li><b>מצלמים</b><span>בטלפון, כרגיל.</span></li>
-      <li><b>גיבוי לענן</b><span>Google Photos מגבה לבד.</span><span class="auto">אוטומטי</span></li>
-      <li><b>מעבירים למחשב</b><span>פעם בחודש, לתיקייה "00 לסדר".</span></li>
-      <li><b>ממיינים</b><span>טיול, אירוע, או לשנה ולחודש.</span></li>
-      <li><b>מסמנים</b><span>כוכב לטובות, ושמות לפנים חדשות.</span></li>
-    </ol>
-  </section>
-
-  <section>
-    <div class="section-head">
-      <h2>איפה אנחנו עומדים</h2>
-    </div>
-    <div class="next">
-      <div class="box">
-        <h3>כבר נעשה</h3>
-        <ul>
-          <li><span class="mark done">✓</span><span>כל התמונות שבתיקיית התמונות מסודרות לפי שנים, מ-2016 עד 2026.</span></li>
-          <li><span class="mark done">✓</span><span>נמחקו 13,332 עותקים כפולים, 189 ג'יגה. כל המקורות נשארו.</span></li>
-          <li><span class="mark done">✓</span><span>התמונות מגובות ב-Google Photos (נבדק במדגם של 16 תאריכים).</span></li>
-          <li><span class="mark done">✓</span><span>תמונות הודו מקובצות לפי מקום.</span></li>
-        </ul>
+    <!-- MOVE -->
+    <section class="view" id="view-move" hidden>
+      <div class="view-head">
+        <span class="eyebrow">התוכנית</span>
+        <h1>מה עובר לאן</h1>
+        <p>כל תיקייה שיש לך היום, והמקום שלה במבנה החדש. עוד לא הוזז שום דבר, ושום דבר לא יזוז בלי אישור שלך.</p>
       </div>
-      <div class="box">
-        <h3>השלבים הבאים</h3>
-        <ul>
-          <li><span class="mark todo">1</span><span>להחליט מה עושים עם התמונות שקיימות גם במחשב וגם בענן.</span></li>
-          <li><span class="mark todo">2</span><span>להעביר את תיקיות התמונות משולחן העבודה למבנה החדש.</span></li>
-          <li><span class="mark todo">3</span><span>לתת שמות לפנים ב-Google Photos: סאני, זני, תובלי, הבת.</span></li>
-          <li><span class="mark todo">4</span><span>לפתוח אלבום "הכי טובות 2026" ואלבום משותף עם הבת.</span></li>
-        </ul>
+      <div class="legend-row">
+        <span class="pill ok">כבר מסודר</span>
+        <span class="pill go">מוכן להעברה</span>
+        <span class="pill ask">צריך החלטה שלך</span>
       </div>
-    </div>
-  </section>
+      <div class="moves" id="moves"></div>
+      <p class="foot">תיקיות המסמכים בשולחן העבודה (לימודים, ברידג', קורות חיים, לוגותראפיה, פיקוח) אינן תמונות ולא נכללו כאן.</p>
+    </section>
 
+    <!-- IDEAS -->
+    <section class="view" id="view-ideas" hidden>
+      <div class="view-head">
+        <span class="eyebrow">מה עוד אפשר לעשות יחד</span>
+        <h1>רעיונות בשבילך</h1>
+        <p>דברים שאני יכול לבנות איתך מתוך מה שכבר יש לך: התמונות, הספר, הטיולים, הלימודים. כדי להתחיל, מעתיקים את המשפט שבתחתית הכרטיס ושולחים לי.</p>
+      </div>
+      <div class="ideas" id="ideas"></div>
+    </section>
+
+  </main>
 </div>
+
+<script>
+(function () {
+  const MONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+  const FAM = {
+    sky:   { c1: 'var(--t-sky1)',   c2: 'var(--t-sky2)',   label: 'שנים · חיי היומיום' },
+    leaf:  { c1: 'var(--t-leaf1)',  c2: 'var(--t-leaf2)',  label: 'טיולים' },
+    rose:  { c1: 'var(--t-rose1)',  c2: 'var(--t-rose2)',  label: 'אירועים משפחתיים' },
+    clay:  { c1: 'var(--t-clay1)',  c2: 'var(--t-clay2)',  label: 'לבדוק ולהחליט' },
+    plum:  { c1: 'var(--t-plum1)',  c2: 'var(--t-plum2)',  label: 'פרויקטים' },
+    sun:   { c1: 'var(--t-sun1)',   c2: 'var(--t-sun2)',   label: '00 לסדר · תמונות חדשות' },
+    slate: { c1: 'var(--t-slate1)', c2: 'var(--t-slate2)', label: 'לבדיקה ומחיקה' }
+  };
+  const fmt = n => n.toLocaleString('he-IL');
+
+  const yearRaw = [
+    [2016,'9:1'],[2017,'3:1 7:23 12:3'],[2018,'4:4 9:3'],
+    [2019,'2:5 3:5 4:1 5:1 7:2 8:8 9:57 10:212 11:45 12:22'],
+    [2020,'1:6 2:61 3:4 4:7 5:18 7:7 9:2 10:11 11:2'],
+    [2021,'1:1 2:65 3:72 4:23 5:4 8:88 9:73 10:2 11:46'],
+    [2022,'1:10 2:7 3:85 4:117 5:8 6:9 7:4 8:5 9:69 10:15 12:214'],
+    [2023,'1:7 2:2 3:52 4:127 5:371 6:221 7:92 8:375 9:16 10:30 11:7 12:27'],
+    [2024,'1:42 2:384 3:244 4:333 5:118 6:795 7:118 8:344 9:38 10:283 12:354'],
+    [2025,'1:667 2:768 4:198 5:11 6:7 7:58 8:41 9:115 10:44 11:67 12:10'],
+    [2026,'1:26 2:935 3:601 4:81 5:4 6:70 7:906 8:421 9:130 10:293']
+  ];
+  const monthNotes = { '2026-2': 'הטיול להודו', '2026-3': 'הטיול להודו', '2026-7': 'לונדון', '2025-1': 'יפן?', '2025-2': 'יפן?' };
+  const years = yearRaw.map(([y, s]) => {
+    const kids = s.split(' ').map(p => { const [m, c] = p.split(':').map(Number); return { name: String(m).padStart(2, '0') + ' ' + MONTHS[m - 1], count: c, note: monthNotes[y + '-' + m] || '' }; });
+    const count = kids.reduce((a, k) => a + k.count, 0);
+    return { name: String(y), count, note: count > 1000 ? 'שנה עמוסה. כדאי לחלק לחודשים.' : '', children: kids.length > 1 ? kids : null };
+  }).reverse();
+
+  const india = [['רישיקש',220],["ג'איפור",170],['מונאר והסביבה',241],['דלהי',138],['אמריצר',138],["מקלאוד גאנג'",102],['דרמסאלה',61],['אגרה',52],['ורנאסי',52],['עוד מקומות',137]]
+    .map(([name, count]) => ({ name, count }));
+
+  const tree = {
+    name: 'כל התמונות',
+    children: [
+      { name: 'שנים', fam: 'sky', tag: 'קיים', count: years.reduce((a, y) => a + y.count, 0), note: 'חיי היומיום, שנה אחרי שנה. כבר מסודר מ-2016 עד 2026.', children: years },
+      { name: 'טיולים', fam: 'leaf', tag: 'משולחן העבודה', note: 'תיקייה לכל טיול, עם שנה וחודש בתחילת השם.', children: [
+        { name: '2026-02 הודו', count: 1311, note: 'מסודר לפי עיר. אלה עותקים של תמונות מתיקיית 2026.', children: india },
+        { name: '2016 יפן', count: 902 },
+        { name: 'יפן', count: 617, note: 'כנראה טיול אחר ליפן. לבדוק את השנה.' },
+        { name: 'מאוריציוס', count: 233 },
+        { name: 'כרתים', count: 227 },
+        { name: 'סרי לנקה', count: 162, note: 'התמונות הישנות ביותר, מ-2010.' },
+        { name: 'דלהי', count: 5, note: 'כנראה חלק מהטיול להודו. לאחד.' }
+      ] },
+      { name: 'אירועים משפחתיים', fam: 'rose', tag: 'חדש', note: 'לידות, חתונות, ימי הולדת, חגים גדולים.', children: [
+        { name: 'יום הולדת בחוף · סאני ואמא', count: 432 },
+        { name: 'חתונה וחינה', count: 38, note: 'מתוך תיקייה שרובה מסמכים.' },
+        { name: '2024 · הולדת סאני', count: 0, note: 'תיקייה חדשה. התמונות יגיעו מתיקיית 2024.' }
+      ] },
+      { name: 'לבדוק ולהחליט', fam: 'clay', tag: 'צריך החלטה', note: 'תיקיות שצריך לפתוח ולהחליט לאן הן שייכות.', children: [
+        { name: 'פל מאי 2018', count: 838, note: 'חצי תמונות, חצי סרטונים, 2017 עד 2020. אירוע? טיול? עבודה?' },
+        { name: 'סאני (2023)', count: 61, note: 'תמונות של אדם, או חומר לספר?' }
+      ] },
+      { name: 'פרויקטים', fam: 'plum', tag: 'חדש', note: 'תמונות שהן חומר עבודה: איורים לספר של סאני, סרטונים מ-Canva.', children: [
+        { name: 'ספר סאני · איורים', count: 13 }, { name: 'Canva', count: 2 }
+      ] },
+      { name: '00 לסדר', fam: 'sun', tag: 'חדש', count: 0, note: 'תיבת דואר נכנס. כל תמונה חדשה נכנסת לכאן, ופעם בחודש ממיינים.' },
+      { name: 'לבדיקה ומחיקה', fam: 'slate', tag: 'חדש', count: 6, note: 'צילומי מסך, קבלות ותמונות מוואטסאפ.' }
+    ]
+  };
+  (function sumUp(n) { if (n.children) { n.children.forEach(sumUp); if (n.count == null) n.count = n.children.reduce((a, k) => a + k.count, 0); } })(tree);
+  (function famDown(n, fam) { n.fam = n.fam || fam; (n.children || []).forEach(k => famDown(k, n.fam)); })(tree, 'sky');
+
+  /* stats */
+  const top = tree.children;
+  document.getElementById('stats').innerHTML = [
+    [top[0], 'בתיקיות השנים'], [top[1], 'בטיולים'], [top[2], 'באירועים'], [{ count: 189, fam: 'slate' }, "ג'יגה פונו מכפילויות"]
+  ].map(([n, l]) => `<div class="stat"><b>${fmt(n.count)}</b><span><i class="dot" style="background:${FAM[n.fam].c1}"></i>${l}</span></div>`).join('');
+
+  document.getElementById('legend').innerHTML = Object.values(FAM).map(f => `<div><i class="swatch" style="background:linear-gradient(155deg,${f.c1},${f.c2})"></i>${f.label}</div>`).join('');
+
+  /* squarified treemap */
+  function worst(row, side) { const s = row.reduce((a, r) => a + r.a, 0); let mx = 0, mn = Infinity; row.forEach(r => { mx = Math.max(mx, r.a); mn = Math.min(mn, r.a); }); return Math.max(side * side * mx / (s * s), (s * s) / (side * side * mn)); }
+  function placeRow(row, rect, out) {
+    const s = row.reduce((a, r) => a + r.a, 0);
+    if (rect.w >= rect.h) { const cw = s / rect.h; let y = rect.y; row.forEach(r => { const h = r.a / cw; out.push({ x: rect.x, y, w: cw, h, n: r.n }); y += h; }); return { x: rect.x + cw, y: rect.y, w: rect.w - cw, h: rect.h }; }
+    const rh = s / rect.w; let x = rect.x; row.forEach(r => { const w = r.a / rh; out.push({ x, y: rect.y, w, h: rh, n: r.n }); x += w; }); return { x: rect.x, y: rect.y + rh, w: rect.w, h: rect.h - rh };
+  }
+  function squarify(items, rect) {
+    const out = []; let row = []; let r = rect; const rest = items.slice();
+    while (rest.length) { const side = Math.min(r.w, r.h); const nx = rest[0];
+      if (!row.length || worst(row.concat(nx), side) <= worst(row, side)) { row.push(nx); rest.shift(); } else { r = placeRow(row, r, out); row = []; } }
+    if (row.length) placeRow(row, r, out); return out;
+  }
+
+  const tm = document.getElementById('treemap');
+  let path = [tree];
+  function current() { return path[path.length - 1]; }
+  function drawMap() {
+    const node = current(); const kids = node.children.slice();
+    const W = tm.clientWidth, H = tm.clientHeight; if (!W || !H) return;
+    const total = kids.reduce((a, k) => a + k.count, 0) || 1;
+    const minV = total * 0.035;
+    const items = kids.map(n => ({ n, v: Math.max(n.count, minV) })).sort((a, b) => b.v - a.v);
+    const sv = items.reduce((a, i) => a + i.v, 0);
+    items.forEach(i => { i.a = i.v * W * H / sv; });
+    const rects = squarify(items, { x: 0, y: 0, w: W, h: H });
+    tm.innerHTML = '';
+    rects.forEach((r, i) => {
+      const n = r.n; const f = FAM[n.fam]; const open = !!(n.children && n.children.length);
+      const size = (r.w < 130 || r.h < 110) ? (r.w < 70 || r.h < 50 ? 'tiny small' : 'small') : '';
+      const tile = document.createElement('div');
+      tile.className = 'tile ' + n.fam + ' ' + size;
+      tile.style.cssText = `left:${W - r.x - r.w}px;top:${r.y}px;width:${r.w}px;height:${r.h}px`;
+      const inner = document.createElement(open ? 'button' : 'div');
+      if (open) { inner.type = 'button'; inner.setAttribute('aria-label', `${n.name}, ${fmt(n.count)} קבצים. פתיחה`); }
+      inner.className = 'tile-in' + (open ? ' can-open' : '');
+      inner.style.setProperty('--c1', f.c1); inner.style.setProperty('--c2', f.c2);
+      inner.style.setProperty('--d', (i * 35) + 'ms');
+      inner.style.setProperty('--lift', path.length > 1 ? String((i % 4) * 0.06) : '0');
+      const countTxt = n.count === 0 ? 'ריקה בינתיים' : fmt(n.count) + ' קבצים';
+      inner.innerHTML = `${n.tag && path.length === 1 && r.w > 230 && r.h > 110 ? `<span class="tile-badge">${n.tag}</span>` : ''}
+        <div><div class="tile-name">${n.name}</div><div class="tile-count">${countTxt}</div></div>
+        ${n.note && r.h > 120 && r.w > 170 ? `<div class="tile-note">${n.note}</div>` : ''}
+        ${open ? '<div class="open-hint">לחצי לפתוח ←</div>' : (r.w > 120 && r.h > 100 ? '<span class="stack" aria-hidden="true"><i></i><i></i><i></i></span>' : '')}`;
+      if (open) inner.addEventListener('click', () => { path.push(n); update(); });
+      else inner.addEventListener('click', () => showInfo(n));
+      inner.addEventListener('mouseenter', () => showInfo(n));
+      inner.addEventListener('focus', () => showInfo(n));
+      tile.appendChild(inner); tm.appendChild(tile);
+    });
+  }
+  function drawCrumbs() {
+    const c = document.getElementById('crumbs');
+    c.innerHTML = path.map((n, i) => i === path.length - 1 ? `<span class="here">${n.name}</span>` : `<button type="button" data-i="${i}">${n.name}</button><span class="sep">›</span>`).join('')
+      + (path.length > 1 ? `<button type="button" class="back" data-i="${path.length - 2}">→ חזרה</button>` : '');
+    c.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { path = path.slice(0, +b.dataset.i + 1); update(); }));
+  }
+  function showInfo(n) {
+    const f = FAM[n.fam];
+    const kids = n.children ? `<p>${n.children.length} תיקיות בפנים.</p>` : '';
+    document.getElementById('info').innerHTML = `<h3><i class="swatch" style="background:linear-gradient(155deg,${f.c1},${f.c2})"></i>${n.name}</h3>
+      <div class="big">${n.count === 0 ? '0' : fmt(n.count)}</div><p>קבצים</p>${n.note ? `<p>${n.note}</p>` : ''}${kids}`;
+  }
+  function update() { drawCrumbs(); drawMap(); showInfo(current() === tree ? { name: 'כל התמונות', count: tree.count, fam: 'sky', note: 'רחפי או לחצי על ריבוע כדי לראות פרטים.', children: tree.children } : current()); }
+  let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(drawMap, 120); });
+
+  /* thumbnails */
+  const PAL = [
+    ['#8EC5F7','#E8F3FF','#3F7D5A','#2E5E44','#FFE08A'], ['#F6B48A','#FDE3C8','#7A5A9E','#4E3A70','#FFF1B8'],
+    ['#5AA7D6','#BFE3F5','#1F6E8C','#0E4D63','#FFFFFF'], ['#F49FB6','#FFE0E8','#B05E83','#7E3D5C','#FFF6C2'],
+    ['#9AD0C2','#E3F6EF','#4D8B6E','#2F6B51','#FFE9A0'], ['#2C3E70','#6B7FB5','#1B2747','#0F1A33','#F3E7B0'],
+    ['#F7D27A','#FFF2CC','#C27C2C','#8C561B','#FFFFFF'], ['#B7A6E8','#ECE6FF','#6A58A8','#463A7A','#FFE7A6']
+  ];
+  function thumbs(el, n, seed, opts) {
+    let s = seed; const rnd = () => (s = (s * 9301 + 49297) % 233280) / 233280;
+    let html = '';
+    for (let i = 0; i < n; i++) {
+      const p = PAL[Math.floor(rnd() * PAL.length)];
+      const vid = rnd() < 0.22; const star = opts && opts.stars && rnd() < 0.35;
+      const sec = Math.floor(5 + rnd() * 110);
+      html += `<div class="thumb" style="--s1:${p[0]};--s2:${p[1]};--g:${p[2]};--g2:${p[3]};--sn:${p[4]};--sx:${Math.floor(10 + rnd() * 65)}%;--sy:${Math.floor(8 + rnd() * 30)}%;--h:${Math.floor(38 + rnd() * 30)}%;--d:${i * 25}ms">
+        <i class="sun"></i><i class="hill"></i><i class="hill b"></i>
+        <span class="fname">IMG_${Math.floor(1000 + rnd() * 8999)}.${vid ? 'MOV' : 'HEIC'}</span>
+        ${vid ? `<span class="vid">${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}</span>` : ''}${star ? '<i class="star"></i>' : ''}</div>`;
+    }
+    el.innerHTML = html;
+  }
+  document.getElementById('india-folders').innerHTML = india.slice(0, 6).map(c => `<div class="folder"><i class="fi" style="--c1:var(--t-leaf1);--c2:var(--t-leaf2)"></i><b>${c.name}</b><span>${fmt(c.count)} תמונות</span></div>`).join('');
+  thumbs(document.getElementById('grid-pc'), 24, 7);
+  thumbs(document.getElementById('grid-cloud'), 12, 31, { stars: true });
+  const pins = [['רישיקש',220,58,30],["ג'איפור",170,30,52],['דלהי',138,47,38],['אמריצר',138,36,18],['מונאר',241,40,86],["מקלאוד גאנג'",102,46,14],['לונדון',906,82,40],['יפן',1519,12,30],['כרתים',227,74,62]];
+  document.getElementById('places').innerHTML = pins.map(([n, c, x, y], i) => `<div class="pin" style="right:${x}%;top:${y}%;--r:${Math.round(10 + Math.sqrt(c) * 0.7)}px;--d:${i * 0.3}s"><i></i>${n}</div>`).join('');
+  const albums = [['הכי טובות 2026','34 תמונות · את בוחרת בכוכב',3],['הנכדות','משותף עם הבת · מתמלא לבד',11],['2026-02 הודו','1,311 תמונות',5],['לונדון, יולי 2026','906 תמונות',19]];
+  const alb = document.getElementById('albums');
+  alb.innerHTML = albums.map(([t, s]) => `<div class="album"><div class="cover"></div><div class="meta"><b>${t}</b><span>${s}</span></div></div>`).join('');
+  alb.querySelectorAll('.cover').forEach((c, i) => thumbs(c, 3, albums[i][2]));
+
+  const gridPc = document.getElementById('grid-pc'), gridCloud = document.getElementById('grid-cloud');
+  const sizes = { 's': '76px', 'm': '120px', 'l': '200px' };
+  ['s', 'm', 'l'].forEach(k => document.getElementById('size-' + k).addEventListener('click', () => {
+    ['s', 'm', 'l'].forEach(j => document.getElementById('size-' + j).setAttribute('aria-pressed', String(j === k)));
+    [gridPc, gridCloud].forEach(g => { g.style.setProperty('--t', sizes[k]); g.classList.toggle('large', k === 'l'); });
+  }));
+  function where(cloud) {
+    document.getElementById('where-pc').setAttribute('aria-pressed', String(!cloud));
+    document.getElementById('where-cloud').setAttribute('aria-pressed', String(cloud));
+    document.getElementById('win-pc').hidden = cloud; document.getElementById('win-cloud').hidden = !cloud;
+  }
+  document.getElementById('where-pc').addEventListener('click', () => where(false));
+  document.getElementById('where-cloud').addEventListener('click', () => where(true));
+
+  /* moves */
+  const moves = [
+    ['תמונות', '2016 עד 2026', 11261, 'שנים', 'sky', 'ok', 'כבר מסודר. בשנים העמוסות (2024 עד 2026) כדאי לחלק גם לחודשים.'],
+    ['תמונות', 'הודו', 1311, 'טיולים › 2026-02 הודו', 'leaf', 'ask', 'עותקים של תמונות מתיקיית 2026. מחליטים יחד עם נושא הכפילויות.'],
+    ['שולחן העבודה', 'טיולים', 2146, 'טיולים', 'leaf', 'go', 'כבר מחולק לפי טיול. מוסיפים שנה לשם, ומאחדים את דלהי עם הודו.'],
+    ['שולחן העבודה', 'תמונות חוף, יום הולדת', 432, 'אירועים משפחתיים', 'rose', 'go', 'מאחדים את שני החלקים (part1, part2) לתיקייה אחת.'],
+    ['שולחן העבודה', 'חתונה וחינה - עותק', 38, 'אירועים משפחתיים', 'rose', 'ask', 'רק 38 תמונות. השאר מסמכים ועותקים של תיקיות אחרות.'],
+    ['שולחן העבודה', 'פל מאי 2018', 838, 'לבדוק ולהחליט', 'clay', 'ask', 'צריך לפתוח ולהחליט: אירוע, טיול או עבודה.'],
+    ['תמונות', 'סאני (2023)', 61, 'לבדוק ולהחליט', 'clay', 'ask', 'תמונות של אדם, או חומר לספר?'],
+    ['שולחן העבודה', 'canva, סאני ספר', 15, 'פרויקטים', 'plum', 'go', 'המסמכים נשארים איפה שהם. רק התמונות עוברות.'],
+    ['תמונות', 'Screenshots ותיקיות ריקות', 6, 'לבדיקה ומחיקה', 'slate', 'go', 'תיקיות ריקות אפשר למחוק, באישור שלך.']
+  ];
+  const pillTxt = { ok: 'כבר מסודר', go: 'מוכן להעברה', ask: 'צריך החלטה שלך' };
+  document.getElementById('moves').innerHTML = moves.map(([where, from, n, to, fam, st, why]) => `<div class="move">
+      <div class="from"><small>${where}</small><b>${from}</b><span class="count">${fmt(n)} קבצים</span></div>
+      <div class="arrow" aria-hidden="true"></div>
+      <div class="to"><i class="fi" style="--c1:${FAM[fam].c1};--c2:${FAM[fam].c2}"></i><b>${to}</b></div>
+      <div class="why"><span class="pill ${st}">${pillTxt[st]}</span>${why}</div></div>`).join('');
+
+  /* ideas */
+  const ideas = [
+    { t: 'מפת הטיול להודו', p: 'המסלול מתקדם על המפה יום אחרי יום, ובכל עיר נפתחות התמונות שצילמת שם. יש לי כבר מיקום ותאריך לכל 1,311 התמונות.', need: 'כלום. אני בונה, את מסתכלת.', say: 'בוא נבנה את מפת הטיול להודו', stage: 'route' },
+    { t: 'מפת הדמויות של סאני', p: 'סאני במרכז, וסביבה חמשת הילדים וחמשת הכוחות. לחיצה על ילד מראה איפה הוא מופיע בספר ומה הכוח שלו עושה בעלילה.', need: 'לאשר שאני עובד מתוך הגרסה האחרונה שלך.', say: 'בוא נבנה מפת דמויות לספר של סאני', stage: 'orbit' },
+    { t: 'השנה שלי בתמונות', p: 'דף שעובר לאט על הרגעים הכי יפים של 2026: הודו, לונדון, המשפחה. עם מוזיקה שאת בוחרת.', need: 'לבחור 20 עד 40 תמונות אהובות, או לתת לי להציע.', say: 'בוא נעשה את השנה שלי בתמונות 2026', stage: 'stack' },
+    { t: 'כרטיסיות תרגול', p: 'כרטיסיות שמתהפכות: שאלה מצד אחד, תשובה מהצד השני. מתוך מסמכי הברידג\' והסיכומים מהלימודים.', need: 'לבחור נושא: ברידג\' או אחד הקורסים.', say: 'בוא נכין כרטיסיות תרגול לברידג\'', stage: 'flip' },
+    { t: 'ספר תמונות לנכדות', p: 'עמודים מעוצבים עם התמונות של סאני וזני ומשפט קצר מסבתא בכל עמוד. אפשר להדפיס או לשלוח לבת.', need: 'לבחור תמונות ולספר לי מה לכתוב, או לתת לי להציע.', say: 'בוא נעצב ספר תמונות לנכדות', stage: 'book' },
+    { t: 'סקירת הבוקר', p: 'כל בוקר ב-08:00: איך נראה היום, מה פתוח, מה עשינו אתמול, ורעיון אחד. היומן והמייל יתווספו כשתחברי אותם.', need: 'כלום. כבר מוגדר.', say: 'הראה לי את סקירת הבוקר של היום', stage: 'dawn', on: true }
+  ];
+  const stages = {
+    route: `<div class="stage st-route"><svg viewBox="0 0 300 170" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+      <path class="path" d="M70 40 C110 30 120 70 150 62 S200 30 225 55 S240 120 200 130 S120 150 95 120"/>
+      <circle class="city" cx="70" cy="40" r="6"/><circle class="city" cx="150" cy="62" r="6"/><circle class="city" cx="225" cy="55" r="6"/><circle class="city" cx="200" cy="130" r="6"/><circle class="city" cx="95" cy="120" r="6"/>
+      <text x="70" y="26" text-anchor="middle">אמריצר</text><text x="150" y="86" text-anchor="middle">רישיקש</text><text x="225" y="40" text-anchor="middle">דלהי</text><text x="200" y="154" text-anchor="middle">ג'איפור</text><text x="95" y="146" text-anchor="middle">מונאר</text></svg></div>`,
+    orbit: `<div class="stage st-orbit"><div class="ring"><i>ת</i><i>י</i><i>א</i><i>א</i><i>ת</i></div><div class="core">סאני</div></div>`,
+    stack: `<div class="stage st-stack"><div class="card thumb" style="--s1:#F6B48A;--s2:#FDE3C8;--g:#7A5A9E;--g2:#4E3A70;--sn:#FFF1B8;--sx:20%;--sy:15%;--h:50%"><i class="sun"></i><i class="hill"></i><i class="hill b"></i></div><div class="card thumb" style="--s1:#8EC5F7;--s2:#E8F3FF;--g:#3F7D5A;--g2:#2E5E44;--sn:#FFE08A;--sx:60%;--sy:12%;--h:46%"><i class="sun"></i><i class="hill"></i><i class="hill b"></i></div><div class="card thumb" style="--s1:#F49FB6;--s2:#FFE0E8;--g:#B05E83;--g2:#7E3D5C;--sn:#FFF6C2;--sx:40%;--sy:20%;--h:55%"><i class="sun"></i><i class="hill"></i><i class="hill b"></i></div></div>`,
+    flip: `<div class="stage st-flip"><div class="flipcard"><div class="f">פתיחה של 1NT: כמה נקודות?</div><div class="b">15 עד 17, יד מאוזנת</div></div></div>`,
+    book: `<div class="stage st-book"><div class="book"><div class="page l"><div class="ph thumb" style="--s1:#9AD0C2;--s2:#E3F6EF;--g:#4D8B6E;--g2:#2F6B51;--sn:#FFE9A0;--sx:30%;--sy:15%;--h:45%"><i class="sun"></i><i class="hill"></i></div><div class="ln"></div><div class="ln" style="width:70%"></div></div><div class="page r"><div class="ph thumb" style="--s1:#F7D27A;--s2:#FFF2CC;--g:#C27C2C;--g2:#8C561B;--sn:#FFFFFF;--sx:55%;--sy:15%;--h:45%"><i class="sun"></i><i class="hill"></i></div><div class="ln"></div><div class="ln" style="width:60%"></div></div><div class="page turn"><div class="ph thumb" style="--s1:#B7A6E8;--s2:#ECE6FF;--g:#6A58A8;--g2:#463A7A;--sn:#FFE7A6;--sx:40%;--sy:20%;--h:45%"><i class="sun"></i><i class="hill"></i></div><div class="ln"></div><div class="ln" style="width:80%"></div></div></div></div>`,
+    dawn: `<div class="stage st-dawn"><svg viewBox="0 0 300 170" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><circle class="sunrise" cx="150" cy="105" r="26"/><rect x="0" y="112" width="300" height="60" fill="var(--chrome)"/><path class="ridge" d="M0 112 C40 112 60 96 90 100 S140 116 170 108 S240 92 300 110"/></svg></div>`
+  };
+  document.getElementById('ideas').innerHTML = ideas.map((d, i) => `<article class="idea">${stages[d.stage]}
+      <div class="body">${d.on ? '<span class="pill ok status">כבר פעיל</span>' : ''}<h3>${d.t}</h3><p>${d.p}</p>
+      <p class="need"><b>מה צריך ממך:</b> ${d.need}</p>
+      <div class="say"><span id="say-${i}">"${d.say}"</span><button type="button" data-say="${i}">העתקה</button></div></div></article>`).join('');
+  document.querySelectorAll('[data-say]').forEach(b => b.addEventListener('click', () => {
+    const el = document.getElementById('say-' + b.dataset.say); const txt = el.textContent.replace(/"/g, '');
+    const done = () => { b.textContent = 'הועתק'; setTimeout(() => { b.textContent = 'העתקה'; }, 1600); };
+    const fallback = () => { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = 'סומן, העתיקי'; };
+    try { navigator.clipboard.writeText(txt).then(done, fallback); } catch (e) { fallback(); }
+  }));
+
+  /* routing */
+  const VIEWS = ['map', 'look', 'move', 'ideas'];
+  function route() {
+    const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'map';
+    VIEWS.forEach(k => { document.getElementById('view-' + k).hidden = k !== v; });
+    document.querySelectorAll('.nav a').forEach(a => { if (a.dataset.view === v) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+    if (v === 'map') requestAnimationFrame(update);
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener('hashchange', route);
+  route();
+})();
+</script>

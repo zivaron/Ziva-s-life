@@ -259,6 +259,49 @@ main { padding-block: 36px 72px; }
 
 .foot { color: var(--muted); font-size: 14px; }
 
+/* concept diagrams (flowchart + entity diagram) */
+.diagram-card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 18px; display: grid; gap: 14px; }
+.diagram-head { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+.diagram-head h2 { font-size: clamp(20px, 3vw, 26px); font-weight: 700; }
+.diagram-scroll { overflow-x: auto; }
+.diagram-scroll svg { display: block; width: 100%; min-width: 640px; height: auto; }
+.diagram-cap { color: var(--muted); font-size: 15px; }
+.dg-line { fill: none; stroke: var(--muted); stroke-width: 2; animation: dgdraw 1s ease-out backwards; animation-delay: var(--d, 0s); stroke-dasharray: 400; stroke-dashoffset: 0; }
+@keyframes dgdraw { from { stroke-dashoffset: 400; } }
+.dg-arrow { fill: var(--muted); }
+.dg-diamond { fill: var(--surface); stroke: var(--accent); stroke-width: 2.5; }
+.dg-ellipse { fill: var(--surface); stroke: var(--line); stroke-width: 2; }
+.dg-t { fill: var(--ink); font-family: var(--font-display); font-weight: 600; font-size: 15px; }
+.dg-s { fill: var(--muted); font-family: var(--font-body); font-size: 13px; }
+.dg-yes { fill: var(--ok); font-family: var(--font-display); font-weight: 700; font-size: 13px; }
+.dg-no { fill: var(--muted); font-family: var(--font-display); font-weight: 700; font-size: 13px; }
+.dg-w { fill: #FFFFFF; font-family: var(--font-display); font-weight: 700; font-size: 17px; }
+.dg-ws { fill: #FFFFFF; opacity: .9; font-family: var(--font-body); font-size: 13px; }
+.dg-inv { fill: var(--surface); font-family: var(--font-display); font-weight: 700; font-size: 18px; }
+.dg-band-pc { fill: var(--accent-soft); }
+.dg-band-cloud { fill: var(--chrome); }
+.dg-band-label { fill: var(--muted); font-family: var(--font-display); font-weight: 700; font-size: 14px; letter-spacing: .04em; }
+.dg-node { cursor: pointer; animation: pop .5s cubic-bezier(.2,.8,.2,1) backwards; animation-delay: var(--d, 0s); transform-box: fill-box; transform-origin: center; }
+.dg-node:hover rect, .dg-node:focus-visible rect { filter: brightness(1.1); stroke: var(--ink); stroke-width: 2; }
+.dg-node:focus { outline: none; }
+.dg-dashed { fill: none; stroke: var(--t-rose1); stroke-width: 2; stroke-dasharray: 6 5; }
+.dg-card-anim { animation: pop .5s cubic-bezier(.2,.8,.2,1) backwards; animation-delay: var(--d, 0s); transform-box: fill-box; transform-origin: center; }
+
+/* more idea stages */
+.st-world svg, .st-time svg, .st-london svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.st-world .arc { fill: none; stroke: var(--t-sky1); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 4 6; animation: fly 3s linear infinite; }
+@keyframes fly { to { stroke-dashoffset: -60; } }
+.st-world .home { fill: var(--t-sun1); }
+.st-world .spot { fill: var(--t-rose1); stroke: #fff; stroke-width: 2; }
+.st-world text, .st-time text, .st-london text { font-family: var(--font-display); font-size: 11px; font-weight: 600; fill: var(--ink); }
+.st-world .land { fill: color-mix(in srgb, var(--ok) 22%, transparent); }
+.st-time .axis { stroke: var(--ink); stroke-width: 2.5; stroke-linecap: round; }
+.st-time .ev { animation: blink 6s ease-in-out infinite; animation-delay: var(--d, 0s); transform-box: fill-box; transform-origin: center; }
+@keyframes blink { 0%, 100% { transform: scale(1); } 10% { transform: scale(1.35); } 20% { transform: scale(1); } }
+.st-london .street { stroke: var(--line); stroke-width: 6; stroke-linecap: round; }
+.st-london .river { fill: none; stroke: color-mix(in srgb, var(--accent) 45%, transparent); stroke-width: 12; stroke-linecap: round; }
+.st-london .lp { fill: var(--t-rose1); stroke: #fff; stroke-width: 2; animation: blink 4s ease-in-out infinite; animation-delay: var(--d, 0s); transform-box: fill-box; transform-origin: center; }
+
 @media (max-width: 900px) {
   .map-shell { grid-template-columns: 1fr; }
   .ideas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -286,6 +329,7 @@ main { padding-block: 36px 72px; }
     <div class="wrap">
       <div class="brand"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>התמונות של זיוה</span></div>
       <nav class="nav" aria-label="עמודי האתר">
+        <a href="#plan" data-view="plan">התרשים</a>
         <a href="#map" data-view="map">המפה</a>
         <a href="#look" data-view="look">ככה זה ייראה</a>
         <a href="#move" data-view="move">מה עובר לאן</a>
@@ -296,8 +340,115 @@ main { padding-block: 36px 72px; }
 
   <main class="wrap">
 
+    <!-- PLAN (diagrams) -->
+    <section class="view" id="view-plan">
+      <div class="view-head">
+        <span class="eyebrow">הרעיון בתרשים</span>
+        <h1>איך יסודרו התמונות</h1>
+        <p>שני תרשימים: לאן הולכת כל תמונה חדשה, ומה יש לכל תמונה. לחיצה על תיבה צבעונית פותחת את התיקייה בעמוד המפה.</p>
+      </div>
+
+      <div class="diagram-card">
+        <div class="diagram-head">
+          <h2 id="dg-title">לאן הולכת כל תמונה?</h2>
+          <div class="seg" role="group" aria-label="בחירת תרשים">
+            <button type="button" id="dg-btn-flow" aria-pressed="true">לאן הולכת תמונה</button>
+            <button type="button" id="dg-btn-er" aria-pressed="false">מה יש לכל תמונה</button>
+          </div>
+        </div>
+
+        <div class="diagram-scroll" id="dg-flow">
+          <svg viewBox="0 0 900 590" role="img" aria-label="תרשים זרימה: לאן הולכת כל תמונה חדשה">
+            <defs>
+              <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-arrow" d="M0 0 L10 5 L0 10 z"/></marker>
+            </defs>
+            <!-- start -->
+            <g class="dg-card-anim" style="--d:0s">
+              <rect x="490" y="18" width="260" height="48" rx="24" style="fill:var(--t-sun1)"/>
+              <text x="620" y="48" text-anchor="middle" class="dg-w" style="fill:var(--on-sun)">תמונה חדשה · 00 לסדר</text>
+            </g>
+            <!-- connectors -->
+            <path class="dg-line" style="--d:.2s" d="M620 66 V93" marker-end="url(#ah)"/>
+            <path class="dg-line" style="--d:.5s" d="M535 130 H374" marker-end="url(#ah)"/>
+            <path class="dg-line" style="--d:.5s" d="M620 165 V193" marker-end="url(#ah)"/>
+            <path class="dg-line" style="--d:.8s" d="M535 230 H374" marker-end="url(#ah)"/>
+            <path class="dg-line" style="--d:.8s" d="M620 265 V293" marker-end="url(#ah)"/>
+            <path class="dg-line" style="--d:1.1s" d="M535 330 H374" marker-end="url(#ah)"/>
+            <path class="dg-line" style="--d:1.1s" d="M620 365 V393" marker-end="url(#ah)"/>
+            <path class="dg-line" style="--d:1.4s" d="M535 430 H374" marker-end="url(#ah)"/>
+            <path class="dg-line" style="--d:1.4s" d="M620 465 V498" marker-end="url(#ah)"/>
+            <!-- yes / no labels -->
+            <text x="455" y="121" text-anchor="middle" class="dg-yes">כן</text>
+            <text x="455" y="221" text-anchor="middle" class="dg-yes">כן</text>
+            <text x="455" y="321" text-anchor="middle" class="dg-yes">כן</text>
+            <text x="455" y="421" text-anchor="middle" class="dg-yes">כן</text>
+            <text x="642" y="184" class="dg-no">לא</text>
+            <text x="642" y="284" class="dg-no">לא</text>
+            <text x="642" y="384" class="dg-no">לא</text>
+            <text x="642" y="486" class="dg-no">לא</text>
+            <!-- diamonds -->
+            <g class="dg-card-anim" style="--d:.3s"><polygon class="dg-diamond" points="620,95 705,130 620,165 535,130"/><text x="620" y="135" text-anchor="middle" class="dg-t">טיול?</text></g>
+            <g class="dg-card-anim" style="--d:.6s"><polygon class="dg-diamond" points="620,195 705,230 620,265 535,230"/><text x="620" y="235" text-anchor="middle" class="dg-t">אירוע משפחתי?</text></g>
+            <g class="dg-card-anim" style="--d:.9s"><polygon class="dg-diamond" points="620,295 705,330 620,365 535,330"/><text x="620" y="335" text-anchor="middle" class="dg-t">חומר עבודה?</text></g>
+            <g class="dg-card-anim" style="--d:1.2s"><polygon class="dg-diamond" points="620,395 705,430 620,465 535,430"/><text x="620" y="435" text-anchor="middle" class="dg-t">שווה לשמור?</text></g>
+            <!-- destination boxes (click = open on the map below) -->
+            <g class="dg-node" tabindex="0" role="button" data-go="טיולים" style="--d:.6s"><rect x="130" y="102" width="240" height="56" rx="10" style="fill:var(--t-leaf1)"/><text x="250" y="126" text-anchor="middle" class="dg-w">טיולים</text><text x="250" y="146" text-anchor="middle" class="dg-ws">למשל: 2026-02 הודו</text></g>
+            <g class="dg-node" tabindex="0" role="button" data-go="אירועים משפחתיים" style="--d:.9s"><rect x="130" y="202" width="240" height="56" rx="10" style="fill:var(--t-rose1)"/><text x="250" y="226" text-anchor="middle" class="dg-w">אירועים משפחתיים</text><text x="250" y="246" text-anchor="middle" class="dg-ws">למשל: 2024 · הולדת סאני</text></g>
+            <g class="dg-node" tabindex="0" role="button" data-go="פרויקטים" style="--d:1.2s"><rect x="130" y="302" width="240" height="56" rx="10" style="fill:var(--t-plum1)"/><text x="250" y="326" text-anchor="middle" class="dg-w">פרויקטים</text><text x="250" y="346" text-anchor="middle" class="dg-ws">למשל: איורים לספר של סאני</text></g>
+            <g class="dg-node" tabindex="0" role="button" data-go="שנים" style="--d:1.5s"><rect x="130" y="402" width="240" height="56" rx="10" style="fill:var(--t-sky1)"/><text x="250" y="426" text-anchor="middle" class="dg-w">שנים › שנה › חודש</text><text x="250" y="446" text-anchor="middle" class="dg-ws">חיי היומיום. למשל: 2026 › 07 יולי</text></g>
+            <g class="dg-node" tabindex="0" role="button" data-go="לבדיקה ומחיקה" style="--d:1.7s"><rect x="500" y="500" width="240" height="56" rx="10" style="fill:var(--t-slate1)"/><text x="620" y="524" text-anchor="middle" class="dg-w">לבדיקה ומחיקה</text><text x="620" y="544" text-anchor="middle" class="dg-ws">צילומי מסך, קבלות, כפולות</text></g>
+            <!-- reminder: people & places are not folders -->
+            <g class="dg-card-anim" style="--d:1.9s">
+              <rect x="130" y="500" width="240" height="56" rx="10" class="dg-dashed"/>
+              <text x="250" y="524" text-anchor="middle" class="dg-t" style="fill:var(--t-rose1)">ואנשים? ומקומות?</text>
+              <text x="250" y="544" text-anchor="middle" class="dg-s">לא תיקייה. מסמנים ב-Google Photos</text>
+            </g>
+          </svg>
+        </div>
+
+        <div class="diagram-scroll" id="dg-er" hidden>
+          <svg viewBox="0 0 900 420" role="img" aria-label="תרשים ישויות: לכל תמונה יש בית אחד במחשב וכמה דרכים להגיע אליה ב-Google Photos">
+            <rect x="460" y="10" width="430" height="400" rx="16" class="dg-band-pc"/>
+            <rect x="10" y="10" width="440" height="400" rx="16" class="dg-band-cloud"/>
+            <text x="870" y="40" text-anchor="end" class="dg-band-label">במחשב · איפה היא גרה</text>
+            <text x="30" y="40" class="dg-band-label">ב-Google Photos · איך מוצאים אותה</text>
+            <!-- lines -->
+            <path class="dg-line" style="--d:.3s" d="M535 210 H580"/>
+            <path class="dg-line" style="--d:.4s" d="M700 210 H730"/>
+            <path class="dg-line" style="--d:.5s" d="M800 182 L800 134"/>
+            <path class="dg-line" style="--d:.3s" d="M385 196 L330 136"/>
+            <path class="dg-line" style="--d:.4s" d="M190 130 H150"/>
+            <path class="dg-line" style="--d:.3s" d="M385 224 L330 294"/>
+            <path class="dg-line" style="--d:.4s" d="M190 300 H150"/>
+            <path class="dg-line" style="--d:.5s" d="M460 182 V104"/>
+            <path class="dg-line" style="--d:.5s" d="M460 238 V318"/>
+            <!-- entity: photo -->
+            <g class="dg-card-anim" style="--d:0s"><rect x="385" y="182" width="150" height="56" rx="10" style="fill:var(--ink)"/><text x="460" y="216" text-anchor="middle" class="dg-inv">תמונה</text></g>
+            <!-- attributes -->
+            <g class="dg-card-anim" style="--d:.6s"><ellipse class="dg-ellipse" cx="460" cy="80" rx="62" ry="24"/><text x="460" y="85" text-anchor="middle" class="dg-t">תאריך</text></g>
+            <g class="dg-card-anim" style="--d:.6s"><ellipse class="dg-ellipse" cx="460" cy="342" rx="96" ry="24"/><text x="460" y="347" text-anchor="middle" class="dg-t">תמונה או סרטון</text></g>
+            <g class="dg-card-anim" style="--d:.7s"><ellipse class="dg-ellipse" cx="800" cy="110" rx="82" ry="24"/><text x="800" y="115" text-anchor="middle" class="dg-t">שנה · טיול · אירוע</text></g>
+            <!-- relations -->
+            <g class="dg-card-anim" style="--d:.4s"><polygon class="dg-diamond" points="640,180 700,210 640,240 580,210"/><text x="640" y="215" text-anchor="middle" class="dg-t">גרה ב</text></g>
+            <g class="dg-card-anim" style="--d:.4s"><polygon class="dg-diamond" points="260,98 330,130 260,162 190,130"/><text x="260" y="135" text-anchor="middle" class="dg-t">מופיעים בה</text></g>
+            <g class="dg-card-anim" style="--d:.4s"><polygon class="dg-diamond" points="260,268 330,300 260,332 190,300"/><text x="260" y="305" text-anchor="middle" class="dg-t">צולמה ב</text></g>
+            <!-- cardinality -->
+            <text x="716" y="200" text-anchor="middle" class="dg-yes">1</text>
+            <text x="168" y="120" text-anchor="middle" class="dg-s">רבים</text>
+            <text x="168" y="290" text-anchor="middle" class="dg-s">1</text>
+            <!-- entities -->
+            <g class="dg-node" tabindex="0" role="button" data-go="שנים" style="--d:.5s"><rect x="730" y="182" width="140" height="56" rx="10" style="fill:var(--t-sky1)"/><text x="800" y="216" text-anchor="middle" class="dg-w">תיקייה אחת</text></g>
+            <g class="dg-card-anim" style="--d:.5s"><rect x="30" y="102" width="120" height="56" rx="10" style="fill:var(--t-rose1)"/><text x="90" y="128" text-anchor="middle" class="dg-w">אנשים</text><text x="90" y="147" text-anchor="middle" class="dg-ws">סאני, זני, תובלי</text></g>
+            <g class="dg-card-anim" style="--d:.5s"><rect x="30" y="272" width="120" height="56" rx="10" style="fill:var(--t-leaf1)"/><text x="90" y="298" text-anchor="middle" class="dg-w">מקום</text><text x="90" y="317" text-anchor="middle" class="dg-ws">רישיקש, לונדון</text></g>
+          </svg>
+        </div>
+        <p class="diagram-cap" id="dg-cap">עוברים מלמעלה למטה ועונים על השאלות. לחיצה על תיבה צבעונית פותחת את התיקייה בעמוד המפה.</p>
+      </div>
+
+    </section>
+
     <!-- MAP -->
-    <section class="view" id="view-map">
+    <section class="view" id="view-map" hidden>
       <div class="view-head">
         <span class="eyebrow">המבנה החדש · נובמבר 2026</span>
         <h1>כל התמונות שלך, במבט אחד</h1>
@@ -567,6 +718,29 @@ main { padding-block: 36px 72px; }
   function update() { drawCrumbs(); drawMap(); showInfo(current() === tree ? { name: 'כל התמונות', count: tree.count, fam: 'sky', note: 'רחפי או לחצי על ריבוע כדי לראות פרטים.', children: tree.children } : current()); }
   let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(drawMap, 120); });
 
+  /* concept diagrams */
+  function showDiagram(er) {
+    document.getElementById('dg-btn-flow').setAttribute('aria-pressed', String(!er));
+    document.getElementById('dg-btn-er').setAttribute('aria-pressed', String(er));
+    document.getElementById('dg-flow').hidden = er; document.getElementById('dg-er').hidden = !er;
+    document.getElementById('dg-title').textContent = er ? 'מה יש לכל תמונה?' : 'לאן הולכת כל תמונה?';
+    document.getElementById('dg-cap').textContent = er
+      ? 'לכל תמונה יש בית אחד במחשב (צד ימין), ואליה מגיעים גם לפי אנשים ומקומות ב-Google Photos (צד שמאל). אותה תמונה, בלי עותקים.'
+      : 'עוברים מלמעלה למטה ועונים על השאלות. לחיצה על תיבה צבעונית פותחת את התיקייה בעמוד המפה.';
+  }
+  document.getElementById('dg-btn-flow').addEventListener('click', () => showDiagram(false));
+  document.getElementById('dg-btn-er').addEventListener('click', () => showDiagram(true));
+  document.querySelectorAll('.dg-node').forEach(g => {
+    const go = () => {
+      const n = tree.children.find(k => k.name === g.dataset.go); if (!n) return;
+      path = n.children ? [tree, n] : [tree];
+      if (location.hash !== '#map') location.hash = 'map'; else update();
+      setTimeout(() => { showInfo(n); tm.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 90);
+    };
+    g.addEventListener('click', go);
+    g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+  });
+
   /* thumbnails */
   const PAL = [
     ['#8EC5F7','#E8F3FF','#3F7D5A','#2E5E44','#FFE08A'], ['#F6B48A','#FDE3C8','#7A5A9E','#4E3A70','#FFF1B8'],
@@ -633,6 +807,9 @@ main { padding-block: 36px 72px; }
 
   /* ideas */
   const ideas = [
+    { t: 'מפת כל הטיולים בעולם', p: 'מפה שבה קווים "טסים" מהבית לכל טיול: סרי לנקה (2010), יפן, מאוריציוס, כרתים, הודו, לונדון. לחיצה על נקודה פותחת את התמונות מאותו טיול.', need: 'כלום. המידע כבר בתיקיות הטיולים.', say: 'בוא נבנה מפה של כל הטיולים שלי', stage: 'world' },
+    { t: 'ציר הזמן של המשפחה', p: 'קו זמן מ-2010 עד היום: טיולים, אירועים, הולדת סאני ב-2024. בכל נקודה תמונה אחת ומשפט קצר, ואפשר לגלול אחורה בשנים.', need: 'לספר לי על כמה אירועים חשובים. את השאר אשלים מהתמונות.', say: 'בוא נבנה ציר זמן של המשפחה', stage: 'time' },
+    { t: 'מפת לונדון שלך', p: 'המקומות שכדאי לך לחזור אליהם כשאת אצל הבת: תיאטראות, הופעות, בתי קפה רגועים, גינות לסאני. מותאם לטלפון, לשימוש תוך כדי הליכה.', need: 'כלום. יש לי כבר את מדריך לונדון שלך.', say: 'בוא נבנה מפת לונדון שלי', stage: 'london' },
     { t: 'מפת הטיול להודו', p: 'המסלול מתקדם על המפה יום אחרי יום, ובכל עיר נפתחות התמונות שצילמת שם. יש לי כבר מיקום ותאריך לכל 1,311 התמונות.', need: 'כלום. אני בונה, את מסתכלת.', say: 'בוא נבנה את מפת הטיול להודו', stage: 'route' },
     { t: 'מפת הדמויות של סאני', p: 'סאני במרכז, וסביבה חמשת הילדים וחמשת הכוחות. לחיצה על ילד מראה איפה הוא מופיע בספר ומה הכוח שלו עושה בעלילה.', need: 'לאשר שאני עובד מתוך הגרסה האחרונה שלך.', say: 'בוא נבנה מפת דמויות לספר של סאני', stage: 'orbit' },
     { t: 'השנה שלי בתמונות', p: 'דף שעובר לאט על הרגעים הכי יפים של 2026: הודו, לונדון, המשפחה. עם מוזיקה שאת בוחרת.', need: 'לבחור 20 עד 40 תמונות אהובות, או לתת לי להציע.', say: 'בוא נעשה את השנה שלי בתמונות 2026', stage: 'stack' },
@@ -641,6 +818,27 @@ main { padding-block: 36px 72px; }
     { t: 'סקירת הבוקר', p: 'כל בוקר ב-08:00: איך נראה היום, מה פתוח, מה עשינו אתמול, ורעיון אחד. היומן והמייל יתווספו כשתחברי אותם.', need: 'כלום. כבר מוגדר.', say: 'הראה לי את סקירת הבוקר של היום', stage: 'dawn', on: true }
   ];
   const stages = {
+    world: `<div class="stage st-world"><svg viewBox="0 0 300 170" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+      <ellipse class="land" cx="80" cy="60" rx="55" ry="32"/><ellipse class="land" cx="200" cy="80" rx="70" ry="40"/><ellipse class="land" cx="150" cy="140" rx="30" ry="20"/>
+      <path class="arc" d="M120 82 Q90 30 62 38"/><path class="arc" d="M120 82 Q105 55 100 60"/><path class="arc" d="M120 82 Q170 50 196 86"/>
+      <path class="arc" d="M120 82 Q190 90 214 112"/><path class="arc" d="M120 82 Q160 140 170 146"/><path class="arc" d="M120 82 Q210 10 268 54"/>
+      <circle class="home" cx="120" cy="82" r="7"/><text x="120" y="102" text-anchor="middle">הבית</text>
+      <circle class="spot" cx="62" cy="38" r="5"/><text x="62" y="28" text-anchor="middle">לונדון</text>
+      <circle class="spot" cx="100" cy="60" r="5"/><text x="96" y="52" text-anchor="end">כרתים</text>
+      <circle class="spot" cx="196" cy="86" r="5"/><text x="196" y="78" text-anchor="middle">הודו</text>
+      <circle class="spot" cx="214" cy="112" r="5"/><text x="230" y="116" text-anchor="start">סרי לנקה</text>
+      <circle class="spot" cx="170" cy="146" r="5"/><text x="184" y="150" text-anchor="start">מאוריציוס</text>
+      <circle class="spot" cx="268" cy="54" r="5"/><text x="268" y="44" text-anchor="middle">יפן</text></svg></div>`,
+    time: `<div class="stage st-time"><svg viewBox="0 0 300 170" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+      <line class="axis" x1="20" y1="95" x2="280" y2="95"/>
+      ${[[30,'2010','סרי לנקה','var(--t-leaf1)'],[95,'2016','יפן','var(--t-leaf1)'],[150,'2018','חתונה','var(--t-rose1)'],[205,'2024','סאני','var(--t-sun1)'],[262,'2026','הודו','var(--t-leaf1)']].map(([x,y,l,c],i)=>`<g><circle class="ev" cx="${x}" cy="95" r="9" style="fill:${c};--d:${i*1.1}s"/><text x="${x}" y="122" text-anchor="middle">${y}</text><text x="${x}" y="${i%2?70:66}" text-anchor="middle">${l}</text></g>`).join('')}</svg></div>`,
+    london: `<div class="stage st-london"><svg viewBox="0 0 300 170" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <line class="street" x1="0" y1="50" x2="300" y2="40"/><line class="street" x1="0" y1="120" x2="300" y2="130"/><line class="street" x1="80" y1="0" x2="95" y2="170"/><line class="street" x1="210" y1="0" x2="190" y2="170"/>
+      <path class="river" d="M-10 150 C60 120 120 160 180 135 S270 110 310 120"/>
+      <circle class="lp" cx="60" cy="80" r="8" style="--d:0s"/><text x="60" y="66" text-anchor="middle">קפה</text>
+      <circle class="lp" cx="150" cy="60" r="8" style="--d:1s"/><text x="150" y="46" text-anchor="middle">תיאטרון</text>
+      <circle class="lp" cx="245" cy="95" r="8" style="--d:2s"/><text x="245" y="81" text-anchor="middle">גינה לסאני</text>
+      <circle class="lp" cx="140" cy="105" r="8" style="--d:3s"/><text x="140" y="96" text-anchor="end" dx="-12">הופעה</text></svg></div>`,
     route: `<div class="stage st-route"><svg viewBox="0 0 300 170" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
       <path class="path" d="M70 40 C110 30 120 70 150 62 S200 30 225 55 S240 120 200 130 S120 150 95 120"/>
       <circle class="city" cx="70" cy="40" r="6"/><circle class="city" cx="150" cy="62" r="6"/><circle class="city" cx="225" cy="55" r="6"/><circle class="city" cx="200" cy="130" r="6"/><circle class="city" cx="95" cy="120" r="6"/>
@@ -663,9 +861,9 @@ main { padding-block: 36px 72px; }
   }));
 
   /* routing */
-  const VIEWS = ['map', 'look', 'move', 'ideas'];
+  const VIEWS = ['plan', 'map', 'look', 'move', 'ideas'];
   function route() {
-    const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'map';
+    const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'plan';
     VIEWS.forEach(k => { document.getElementById('view-' + k).hidden = k !== v; });
     document.querySelectorAll('.nav a').forEach(a => { if (a.dataset.view === v) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
     if (v === 'map') requestAnimationFrame(update);

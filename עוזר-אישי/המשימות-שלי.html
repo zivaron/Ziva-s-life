@@ -1,0 +1,438 @@
+<title>המשימות של זיוה</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700;800&family=Assistant:wght@400;600;700&display=swap">
+<style>
+/* Layout: one calm desk. Right column = the conversation with the assistant (first in RTL), left column = today's list.
+   On a phone they stack: the chat on top, the list below. */
+:root {
+  --bg: #F5F3F8; --surface: #FFFFFF; --sunk: #EEEAF4; --ink: #24202B; --muted: #6C6677; --line: #E3DDEA;
+  --accent: #6A44B8; --accent-ink: #FFFFFF; --accent-soft: #EDE6FA; --sun: #D99A1E;
+  --urgent: #C23B47; --urgent-soft: #FBE7E9; --important: #B8740F; --important-soft: #FBF0DC; --normal: #7D7789; --normal-soft: #EFEDF3;
+  --ok: #2E8A5C; --ok-soft: #E2F3EA;
+  --font-display: "Rubik", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Assistant", "Segoe UI", system-ui, sans-serif;
+  --r: 14px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #16141A; --surface: #211E27; --sunk: #2A2631; --ink: #EEEAF3; --muted: #A49DAF; --line: #352F3D;
+  --accent: #A98CEB; --accent-ink: #17131F; --accent-soft: #2F2643; --sun: #F0BF55;
+  --urgent: #EF6E77; --urgent-soft: #3A2226; --important: #EFAE4F; --important-soft: #3A2E1B; --normal: #A39DAE; --normal-soft: #2C2833;
+  --ok: #5CC08D; --ok-soft: #1D3328; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #16141A; --surface: #211E27; --sunk: #2A2631; --ink: #EEEAF3; --muted: #A49DAF; --line: #352F3D;
+  --accent: #A98CEB; --accent-ink: #17131F; --accent-soft: #2F2643; --sun: #F0BF55;
+  --urgent: #EF6E77; --urgent-soft: #3A2226; --important: #EFAE4F; --important-soft: #3A2E1B; --normal: #A39DAE; --normal-soft: #2C2833;
+  --ok: #5CC08D; --ok-soft: #1D3328; color-scheme: dark; }
+
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 17px; line-height: 1.55; direction: rtl; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 22px 40px; display: grid; gap: 18px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
+[hidden] { display: none !important; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 8px; }
+
+/* header */
+.top { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; }
+.hello { display: grid; gap: 2px; }
+.hello small { font-family: var(--font-display); font-weight: 600; color: var(--muted); font-size: 15px; }
+.hello h1 { font-size: clamp(28px, 5vw, 40px); font-weight: 800; letter-spacing: -.01em; }
+.hello h1 span { color: var(--accent); }
+.hello p { margin: 0; color: var(--muted); }
+.day { display: flex; align-items: center; gap: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 6px 8px 6px 16px; }
+.ring { width: 46px; height: 46px; flex: none; }
+.ring circle { fill: none; stroke-width: 5; }
+.ring .bgc { stroke: var(--sunk); }
+.ring .fg { stroke: var(--ok); stroke-linecap: round; transition: stroke-dashoffset .6s ease; transform: rotate(-90deg); transform-origin: 50% 50%; }
+.ring text { font-family: var(--font-display); font-weight: 700; font-size: 13px; fill: var(--ink); }
+.day b { font-family: var(--font-display); font-weight: 700; }
+.day span { color: var(--muted); font-size: 14px; display: block; line-height: 1.2; }
+
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); gap: 18px; align-items: start; }
+@media (max-width: 860px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 18px; display: grid; gap: 14px; min-width: 0; }
+.panel-h { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.panel-h h2 { font-size: 21px; font-weight: 700; }
+.panel-h .hint { color: var(--muted); font-size: 14px; }
+
+/* chat */
+.chat { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); }
+@media (max-width: 860px) { .chat { position: static; } }
+.msgs { display: grid; gap: 10px; align-content: start; max-height: min(56vh, 520px); min-height: 220px; overflow-y: auto; padding: 4px 2px; overscroll-behavior: contain; }
+.msg { max-width: 88%; padding: 10px 14px; border-radius: 18px; white-space: pre-wrap; overflow-wrap: anywhere; animation: rise .25s ease both; }
+.msg.me { justify-self: start; background: var(--accent); color: var(--accent-ink); border-bottom-right-radius: 6px; }
+.msg.ai { justify-self: end; background: var(--sunk); border-bottom-left-radius: 6px; }
+.msg.ai.thinking { color: var(--muted); }
+.msg.note { justify-self: center; background: transparent; color: var(--muted); font-size: 14px; text-align: center; padding: 2px 8px; }
+.dots i { display: inline-block; width: 6px; height: 6px; margin: 0 2px; border-radius: 50%; background: currentColor; animation: blink 1.2s infinite both; }
+.dots i:nth-child(2) { animation-delay: .2s; } .dots i:nth-child(3) { animation-delay: .4s; }
+@keyframes blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; font-size: 15px; }
+.chip:hover { border-color: var(--accent); color: var(--accent); }
+.composer { display: flex; gap: 8px; align-items: end; background: var(--sunk); border-radius: 18px; padding: 6px; }
+.composer textarea { flex: 1; min-width: 0; resize: none; border: 0; background: transparent; padding: 8px 10px; min-height: 44px; max-height: 160px; line-height: 1.45; }
+.composer textarea:focus { outline: none; }
+.composer:focus-within { box-shadow: 0 0 0 2px var(--accent); }
+.icon-btn { flex: none; width: 44px; height: 44px; border-radius: 14px; border: 0; display: grid; place-items: center; font-size: 19px; background: var(--surface); color: var(--ink); }
+.icon-btn.send { background: var(--accent); color: var(--accent-ink); }
+.icon-btn.mic.on { background: var(--urgent); color: #fff; animation: pulse 1.4s infinite; }
+.icon-btn:disabled { opacity: .45; cursor: default; }
+@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--urgent) 45%, transparent); } 50% { box-shadow: 0 0 0 8px transparent; } }
+.chat-foot { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; color: var(--muted); font-size: 13px; }
+.linkish { border: 0; background: none; padding: 0; color: var(--muted); text-decoration: underline; font-size: 13px; }
+
+/* tasks */
+.add { display: flex; gap: 8px; flex-wrap: wrap; }
+.add input[type=text] { flex: 1 1 200px; min-width: 0; border: 1px solid var(--line); background: var(--bg); border-radius: 12px; padding: 10px 12px; }
+.add select { border: 1px solid var(--line); background: var(--bg); border-radius: 12px; padding: 10px; }
+.btn { border: 0; border-radius: 12px; padding: 10px 16px; font-family: var(--font-display); font-weight: 700; background: var(--accent); color: var(--accent-ink); }
+.btn.ghost { background: transparent; color: var(--accent); box-shadow: inset 0 0 0 1px currentColor; }
+.group { display: grid; gap: 8px; }
+.group h3 { font-size: 15px; font-weight: 700; color: var(--muted); letter-spacing: .02em; display: flex; gap: 8px; align-items: center; }
+.group h3 .n { font-family: var(--font-display); background: var(--sunk); color: var(--ink); border-radius: 999px; padding: 0 8px; font-size: 13px; }
+.list { display: grid; gap: 8px; list-style: none; margin: 0; padding: 0; }
+.task { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 12px; border-radius: var(--r); background: var(--bg); border: 1px solid transparent; animation: rise .25s ease both; }
+.task.urgent { background: var(--urgent-soft); }
+.task.flash { border-color: var(--accent); }
+.check { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--normal); background: var(--surface); display: grid; place-items: center; font-size: 15px; color: transparent; padding: 0; }
+.task.urgent .check { border-color: var(--urgent); }
+.task.important .check { border-color: var(--important); }
+.check:hover { color: var(--ok); border-color: var(--ok); }
+.task.done .check { background: var(--ok); border-color: var(--ok); color: #fff; }
+.task.done .t-title { text-decoration: line-through; color: var(--muted); }
+.t-body { min-width: 0; display: grid; gap: 4px; }
+.t-title { font-weight: 600; overflow-wrap: anywhere; }
+.t-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 13px; color: var(--muted); }
+.pill { border: 0; border-radius: 999px; padding: 1px 10px; font-family: var(--font-display); font-weight: 600; font-size: 13px; }
+.pill.urgent { background: var(--urgent); color: #fff; }
+.pill.important { background: var(--important-soft); color: var(--important); }
+.pill.normal { background: var(--normal-soft); color: var(--normal); }
+.due { display: inline-flex; gap: 4px; align-items: center; }
+.due.late { color: var(--urgent); font-weight: 700; }
+.t-note { color: var(--muted); font-size: 14px; overflow-wrap: anywhere; }
+.t-acts { display: flex; gap: 2px; }
+.mini { border: 0; background: transparent; width: 34px; height: 34px; border-radius: 10px; color: var(--muted); font-size: 16px; }
+.mini:hover { background: var(--sunk); color: var(--ink); }
+.empty { text-align: center; padding: 26px 12px; color: var(--muted); display: grid; gap: 6px; justify-items: center; }
+.empty b { color: var(--ink); font-family: var(--font-display); font-size: 18px; }
+.status { font-size: 14px; color: var(--muted); }
+.status.warn { color: var(--urgent); }
+.toast { position: fixed; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 14px; border-radius: 14px; display: flex; gap: 14px; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 20; max-width: calc(100% - 32px); }
+.toast button { border: 0; background: transparent; color: var(--sun); font-weight: 700; font-family: var(--font-display); }
+.edit-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.edit-row input, .edit-row select { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 6px 8px; min-width: 0; }
+.edit-row input[type=text] { flex: 1 1 180px; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="wrap" dir="rtl" lang="he">
+  <header class="top">
+    <div class="hello">
+      <small id="today-date">היום</small>
+      <h1 id="greet">שלום, <span>זיוה</span></h1>
+      <p id="summary">כאן כותבים לי מה צריך לעשות, ואני מסדר לפי מה הכי חשוב.</p>
+    </div>
+    <div class="day" aria-live="polite">
+      <svg class="ring" viewBox="0 0 46 46" aria-hidden="true"><circle class="bgc" cx="23" cy="23" r="19"/><circle class="fg" id="ring" cx="23" cy="23" r="19" stroke-dasharray="119.4" stroke-dashoffset="119.4"/><text id="ring-n" x="23" y="27.5" text-anchor="middle">0</text></svg>
+      <div><b id="day-title">עוד לא התחלנו</b><span id="day-sub">אין עדיין משימות להיום</span></div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <section class="panel chat" aria-labelledby="chat-h">
+      <div class="panel-h"><h2 id="chat-h">לדבר עם העוזר</h2><span class="hint">אפשר לכתוב, או ללחוץ על המיקרופון ולדבר</span></div>
+      <div class="msgs" id="msgs" aria-live="polite"></div>
+      <div class="chips" id="chips">
+        <button type="button" class="chip">מה הכי חשוב היום?</button>
+        <button type="button" class="chip">תסדר לי את היום לפי חשיבות</button>
+        <button type="button" class="chip">מה כבר עשיתי היום?</button>
+        <button type="button" class="chip">תוסיף משימה יומית: </button>
+      </div>
+      <form class="composer" id="composer" autocomplete="off">
+        <button type="button" class="icon-btn mic" id="mic" aria-label="לדבר במקום לכתוב" title="לדבר במקום לכתוב" hidden>🎙</button>
+        <textarea id="say" rows="1" placeholder="למשל: להתקשר לרוני מחר בבוקר, חשוב" aria-label="הודעה לעוזר"></textarea>
+        <button type="submit" class="icon-btn send" id="send" aria-label="שליחה">➤</button>
+      </form>
+      <div class="chat-foot"><span id="chat-status">העוזר מוסיף, משנה ומסדר את המשימות בשבילך.</span><button type="button" class="linkish" id="clear-chat">ניקוי השיחה</button></div>
+    </section>
+
+    <section class="panel" aria-labelledby="tasks-h">
+      <div class="panel-h"><h2 id="tasks-h">המשימות שלי</h2><span class="status" id="db-status">טוען…</span></div>
+      <form class="add" id="add" autocomplete="off">
+        <input type="text" id="add-title" placeholder="משימה חדשה" aria-label="משימה חדשה">
+        <select id="add-prio" aria-label="חשיבות"><option value="normal">רגיל</option><option value="important">חשוב</option><option value="urgent">דחוף</option></select>
+        <select id="add-when" aria-label="מתי"><option value="today">היום</option><option value="tomorrow">מחר</option><option value="daily">כל יום</option><option value="">מתי שיהיה</option></select>
+        <button type="submit" class="btn">הוספה</button>
+      </form>
+      <div id="groups"></div>
+    </section>
+  </div>
+</div>
+<div class="toast" id="toast" hidden role="status"><span id="toast-t"></span><button type="button" id="toast-undo">ביטול</button></div>
+
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const PRIO = { urgent: { he: 'דחוף', rank: 0 }, important: { he: 'חשוב', rank: 1 }, normal: { he: 'רגיל', rank: 2 } };
+  const DAYS = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+  const MONTHS = ['בינואר', 'בפברואר', 'במרץ', 'באפריל', 'במאי', 'ביוני', 'ביולי', 'באוגוסט', 'בספטמבר', 'באוקטובר', 'בנובמבר', 'בדצמבר'];
+  const pad = n => String(n).padStart(2, '0');
+  const iso = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+  let now = new Date(); let TODAY = iso(now);
+  const heDate = s => { const [y, m, d] = s.split('-').map(Number); const dt = new Date(y, m - 1, d); return 'יום ' + DAYS[dt.getDay()] + ', ' + d + ' ' + MONTHS[m - 1]; };
+  const dueLabel = s => { if (!s) return ''; if (s === TODAY) return 'היום'; if (s === iso(addDays(now, 1))) return 'מחר'; if (s === iso(addDays(now, -1))) return 'מאתמול'; if (s < TODAY) return 'מ-' + s.split('-').reverse().slice(0, 2).join('.'); const [y, m, d] = s.split('-').map(Number); const dt = new Date(y, m - 1, d); return (dt - now) / 864e5 < 6 ? 'ביום ' + DAYS[dt.getDay()] : d + '.' + m; };
+
+  function greet() {
+    now = new Date(); TODAY = iso(now);
+    const h = now.getHours();
+    const w = h < 5 ? 'לילה טוב' : h < 12 ? 'בוקר טוב' : h < 17 ? 'צהריים טובים' : h < 21 ? 'ערב טוב' : 'לילה טוב';
+    $('greet').innerHTML = esc(w) + ', <span>זיוה</span>';
+    $('today-date').textContent = heDate(TODAY);
+  }
+  greet();
+
+  /* ---------- state ---------- */
+  let tasks = [];            // [{id, title, priority, due, repeat, note, done, doneAt, doneOn, order, createdAt, archived}]
+  let db = null, tasksCol = null, chatDoc = null;
+  let chat = [];             // [{role:'user'|'assistant', content, at}]
+  let chatReady = false;
+
+  const isDoneToday = t => t.repeat === 'daily' ? t.doneOn === TODAY : !!t.done;
+  const live = () => tasks.filter(t => !t.archived);
+  function sortKey(a, b) { return (PRIO[a.priority] || PRIO.normal).rank - (PRIO[b.priority] || PRIO.normal).rank || (a.order ?? 999) - (b.order ?? 999) || String(a.createdAt).localeCompare(String(b.createdAt)); }
+
+  function groupsOf() {
+    const L = live();
+    const today = L.filter(t => !isDoneToday(t) && (t.repeat === 'daily' || (t.due && t.due <= TODAY))).sort(sortKey);
+    const later = L.filter(t => !isDoneToday(t) && t.repeat !== 'daily' && t.due && t.due > TODAY).sort((a, b) => a.due.localeCompare(b.due) || sortKey(a, b));
+    const someday = L.filter(t => !isDoneToday(t) && t.repeat !== 'daily' && !t.due).sort(sortKey);
+    const done = L.filter(t => isDoneToday(t) && (t.repeat === 'daily' || String(t.doneAt || '').slice(0, 10) === TODAY));
+    return { today, later, someday, done };
+  }
+
+  /* ---------- render ---------- */
+  let editing = null, flashId = null;
+  function taskRow(t) {
+    const p = PRIO[t.priority] ? t.priority : 'normal';
+    const late = t.due && t.due < TODAY && !isDoneToday(t) && t.repeat !== 'daily';
+    if (editing === t.id) {
+      return `<li class="task ${p}" data-id="${esc(t.id)}"><span></span><div class="t-body"><div class="edit-row">
+        <input type="text" id="ed-title" value="${esc(t.title)}" aria-label="שם המשימה">
+        <select id="ed-prio" aria-label="חשיבות">${Object.keys(PRIO).map(k => `<option value="${k}"${k === p ? ' selected' : ''}>${PRIO[k].he}</option>`).join('')}</select>
+        <input type="date" id="ed-due" value="${esc(t.repeat === 'daily' ? '' : t.due || '')}" aria-label="תאריך">
+        <label class="t-meta"><input type="checkbox" id="ed-daily"${t.repeat === 'daily' ? ' checked' : ''}> כל יום</label>
+        <input type="text" id="ed-note" value="${esc(t.note || '')}" placeholder="הערה" aria-label="הערה">
+        </div></div><div class="t-acts"><button type="button" class="btn" data-act="save">שמירה</button></div></li>`;
+    }
+    return `<li class="task ${p}${isDoneToday(t) ? ' done' : ''}${flashId === t.id ? ' flash' : ''}" data-id="${esc(t.id)}">
+      <button type="button" class="check" data-act="toggle" aria-label="${isDoneToday(t) ? 'להחזיר לרשימה' : 'סימון שבוצע'}">✓</button>
+      <div class="t-body"><span class="t-title">${esc(t.title)}</span>
+        <div class="t-meta"><button type="button" class="pill ${p}" data-act="prio" title="לשנות חשיבות">${PRIO[p].he}</button>
+        ${t.repeat === 'daily' ? '<span>↻ כל יום</span>' : t.due ? `<span class="due${late ? ' late' : ''}">📅 ${esc(dueLabel(t.due))}</span>` : ''}</div>
+        ${t.note ? `<span class="t-note">${esc(t.note)}</span>` : ''}</div>
+      <div class="t-acts"><button type="button" class="mini" data-act="edit" aria-label="עריכה" title="עריכה">✎</button><button type="button" class="mini" data-act="remove" aria-label="הסרה" title="הסרה">✕</button></div></li>`;
+  }
+  function render() {
+    const g = groupsOf();
+    const sec = (title, arr, emptyNote) => arr.length || emptyNote ? `<div class="group"><h3>${title}<span class="n">${arr.length}</span></h3>${arr.length ? `<ul class="list">${arr.map(taskRow).join('')}</ul>` : `<p class="status">${emptyNote}</p>`}</div>` : '';
+    if (!live().length) {
+      $('groups').innerHTML = `<div class="empty"><b>עוד אין משימות</b><span>כתבי לי בצד, למשל: "להתקשר לרוני מחר, חשוב",<br>או הוסיפי כאן למעלה.</span></div>`;
+    } else {
+      $('groups').innerHTML = sec('היום', g.today, 'הכול בוצע להיום 🎉') + sec('בימים הקרובים', g.later) + sec('מתי שיהיה', g.someday) + sec('בוצע היום', g.done);
+    }
+    const total = g.today.length + g.done.length, done = g.done.length;
+    const frac = total ? done / total : 0;
+    $('ring').style.strokeDashoffset = (119.4 * (1 - frac)).toFixed(1);
+    $('ring-n').textContent = total ? done + '/' + total : '0';
+    const urgent = g.today.filter(t => t.priority === 'urgent').length;
+    $('day-title').textContent = !total ? 'יום פתוח' : done === total ? 'הכול בוצע!' : (total - done) + ' משימות להיום';
+    $('day-sub').textContent = !total ? 'אין משימות להיום' : urgent ? urgent + ' דחופות' : done ? done + ' כבר בוצעו' : 'בהצלחה';
+    if (editing) { const el = $('ed-title'); if (el && document.activeElement !== el) el.focus(); }
+  }
+
+  /* ---------- writes (one at a time per document) ---------- */
+  const chains = {};
+  function serial(key, fn) { const p = (chains[key] || Promise.resolve()).then(fn, fn); chains[key] = p.catch(() => {}); return p; }
+  function writeFail(e) { $('db-status').textContent = e && e.code === 'quota_exceeded' ? 'אין מקום לעוד משימות. כדאי למחוק ישנות.' : 'השינוי לא נשמר. נסי שוב.'; $('db-status').classList.add('warn'); }
+  function canWrite() { if (!tasksCol) { $('db-status').textContent = 'השמירה עובדת כשהדף פתוח ב-claude.ai.'; $('db-status').classList.add('warn'); return false; } return true; }
+
+  function newTask(f) {
+    const t = { title: String(f.title || '').trim().slice(0, 200), priority: PRIO[f.priority] ? f.priority : 'normal',
+      due: f.repeat === 'daily' ? '' : (f.due || ''), repeat: f.repeat === 'daily' ? 'daily' : '', note: String(f.note || '').slice(0, 300),
+      done: false, doneAt: '', doneOn: '', order: 999, createdAt: new Date().toISOString(), archived: false };
+    if (!t.title) throw new Error('חסר שם למשימה');
+    const ref = tasksCol.doc(); t.id = ref.id;
+    const body = Object.assign({}, t); delete body.id;
+    return serial(ref.id, () => ref.set(body)).then(() => t);
+  }
+  function patch(id, fields) { return serial(id, () => tasksCol.doc(id).update(fields)); }
+  function setDone(t, on) {
+    if (t.repeat === 'daily') return patch(t.id, { doneOn: on ? TODAY : '' });
+    return patch(t.id, { done: on, doneAt: on ? new Date().toISOString() : '' });
+  }
+
+  /* ---------- toast with undo ---------- */
+  let undoFn = null, toastTimer = null;
+  function toast(text, undo) {
+    $('toast-t').textContent = text; undoFn = undo || null; $('toast-undo').hidden = !undo; $('toast').hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => { $('toast').hidden = true; undoFn = null; }, 6000);
+  }
+  $('toast-undo').addEventListener('click', () => { const f = undoFn; $('toast').hidden = true; undoFn = null; if (f) f().catch(writeFail); });
+
+  /* ---------- list interactions ---------- */
+  $('groups').addEventListener('click', e => {
+    const b = e.target.closest('[data-act]'); if (!b) return;
+    const li = b.closest('.task'); const t = tasks.find(x => x.id === li.dataset.id); if (!t || !canWrite()) return;
+    const act = b.dataset.act;
+    if (act === 'toggle') { const on = !isDoneToday(t); setDone(t, on).catch(writeFail); if (on) toast('כל הכבוד! "' + t.title + '" בוצע', () => setDone(t, false)); }
+    if (act === 'prio') { const order = ['normal', 'important', 'urgent']; const next = order[(order.indexOf(t.priority) + 1) % 3]; patch(t.id, { priority: next }).catch(writeFail); }
+    if (act === 'remove') { patch(t.id, { archived: true }).catch(writeFail); toast('"' + t.title + '" הוסרה', () => patch(t.id, { archived: false })); }
+    if (act === 'edit') { editing = t.id; render(); }
+    if (act === 'save') {
+      const daily = $('ed-daily').checked;
+      const f = { title: $('ed-title').value.trim() || t.title, priority: $('ed-prio').value, due: daily ? '' : $('ed-due').value, repeat: daily ? 'daily' : '', note: $('ed-note').value.trim() };
+      editing = null; render(); patch(t.id, f).catch(writeFail);
+    }
+  });
+  $('groups').addEventListener('keydown', e => { if (e.key === 'Enter' && editing && e.target.closest('.edit-row')) { e.preventDefault(); $('groups').querySelector('[data-act="save"]').click(); } if (e.key === 'Escape' && editing) { editing = null; render(); } });
+
+  $('add').addEventListener('submit', e => {
+    e.preventDefault(); const title = $('add-title').value.trim(); if (!title || !canWrite()) return;
+    const when = $('add-when').value;
+    const f = { title, priority: $('add-prio').value, repeat: when === 'daily' ? 'daily' : '', due: when === 'today' ? TODAY : when === 'tomorrow' ? iso(addDays(now, 1)) : '' };
+    $('add-title').value = '';
+    newTask(f).then(t => { flashId = t.id; setTimeout(() => { flashId = null; render(); }, 1500); }).catch(writeFail);
+  });
+
+  /* ---------- the store ---------- */
+  (async function connect() {
+    db = await claude.use('db').catch(() => null);
+    if (!db) { $('db-status').textContent = 'השמירה עובדת כשהדף פתוח ב-claude.ai.'; $('db-status').classList.add('warn'); render(); return; }
+    tasksCol = db.collection('tasks'); chatDoc = db.doc('chat/log');
+    const slow = setTimeout(() => { $('db-status').textContent = 'עדיין מתחבר…'; }, 10000);
+    tasksCol.onSnapshot(snap => {
+      tasks = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
+      if (!snap.metadata.fromCache) { clearTimeout(slow); $('db-status').textContent = 'נשמר אוטומטית'; $('db-status').classList.remove('warn'); }
+      render();
+    }, e => { clearTimeout(slow); $('db-status').textContent = 'אין חיבור למשימות כרגע.'; $('db-status').classList.add('warn'); });
+    chatDoc.onSnapshot(snap => {
+      const m = snap.exists ? (snap.data().messages || []) : [];
+      if (!busy) { chat = m.slice(-40); drawChat(); }
+      chatReady = true;
+    }, () => { chatReady = true; drawChat(); });
+  })();
+
+  /* ---------- chat ---------- */
+  const WELCOME = 'שלום זיוה! אני העוזר שלך. ספרי לי מה צריך לעשות, ואני ארשום, אסדר לפי חשיבות ואזכיר מה הכי דחוף. אפשר גם לשאול: "מה הכי חשוב היום?"';
+  function drawChat(pending) {
+    const box = $('msgs');
+    const items = chat.length ? chat : [{ role: 'assistant', content: WELCOME }];
+    box.innerHTML = items.map(m => `<div class="msg ${m.role === 'user' ? 'me' : 'ai'}">${esc(m.content)}</div>`).join('') + (pending || '');
+    box.scrollTop = box.scrollHeight;
+  }
+  drawChat();
+  function saveChat() { if (!chatDoc) return Promise.resolve(); const body = { messages: chat.slice(-40) }; return serial('chat', () => chatDoc.set(body)).catch(() => {}); }
+
+  let sample = null, busy = false, ctl = null;
+  (async () => {
+    sample = await claude.use('sample').catch(() => null);
+    if (!sample) { $('chat-status').textContent = 'הצ\'אט עובד כשהדף פתוח ב-claude.ai. בינתיים אפשר להוסיף משימות בטופס.'; }
+  })();
+
+  function rules() {
+    const L = live().map(t => ({ id: t.id, title: t.title, priority: t.priority, due: t.repeat === 'daily' ? 'every day' : (t.due || ''), done_today: isDoneToday(t), note: t.note || undefined }));
+    return 'You are Ziva\'s personal assistant inside her own task page. Ziva is a warm Israeli grandmother who is not technical. ' +
+      'ALWAYS answer in simple, warm Hebrew, addressing her in the feminine ("את"). Speak about yourself in the masculine ("אני העוזר שלך"). ' +
+      'Keep answers short: 1 to 4 short sentences, or a short list. No technical words, no markdown symbols like ** or #. ' +
+      'Today is ' + TODAY + ' (' + heDate(TODAY) + '). Tomorrow is ' + iso(addDays(now, 1)) + '. ' +
+      'Priorities: "urgent" = דחוף, "important" = חשוב, "normal" = רגיל. A task with due "every day" repeats daily. ' +
+      'Use the tools to change her list: add_task for anything she asks to do, update_task to change or mark done, remove_task only when she clearly asks to delete, set_order when she asks to organize or prioritize. ' +
+      'Turn relative dates (מחר, ביום ראשון, בעוד שבוע) into YYYY-MM-DD. If she lists several tasks in one message, add each one. ' +
+      'When she asks what is most important, look at urgent first, then late or due today, then important, and answer with the top 1-3 and one short reason. ' +
+      'After changing things, say in one short sentence what you did. Never invent tasks she did not mention. ' +
+      'Her current tasks (JSON): ' + JSON.stringify(L);
+  }
+
+  const TOOLS = [
+    { name: 'add_task', description: 'Add one task to Ziva\'s list. Returns the new task id.',
+      inputSchema: { type: 'object', properties: { title: { type: 'string', description: 'Short task title in Hebrew' }, priority: { type: 'string', enum: ['urgent', 'important', 'normal'] }, due: { type: 'string', description: 'YYYY-MM-DD, or empty for no date' }, repeat: { type: 'string', enum: ['', 'daily'] }, note: { type: 'string' } }, required: ['title'] },
+      execute: async i => { const t = await newTask({ title: String(i.title || ''), priority: String(i.priority || 'normal'), due: /^\d{4}-\d\d-\d\d$/.test(String(i.due || '')) ? String(i.due) : '', repeat: i.repeat === 'daily' ? 'daily' : '', note: String(i.note || '') }); flashId = t.id; return { ok: true, id: t.id }; } },
+    { name: 'update_task', description: 'Change a task: title, priority, due date, repeat, note, or mark it done/not done today. Pass only the fields to change.',
+      inputSchema: { type: 'object', properties: { id: { type: 'string' }, title: { type: 'string' }, priority: { type: 'string', enum: ['urgent', 'important', 'normal'] }, due: { type: 'string' }, repeat: { type: 'string', enum: ['', 'daily'] }, note: { type: 'string' }, done: { type: 'boolean' } }, required: ['id'] },
+      execute: async i => { const t = tasks.find(x => x.id === String(i.id)); if (!t) throw new Error('No task with that id'); const f = {};
+        if (i.title) f.title = String(i.title).slice(0, 200); if (PRIO[i.priority]) f.priority = i.priority; if (typeof i.note === 'string') f.note = i.note.slice(0, 300);
+        if (i.repeat === 'daily') { f.repeat = 'daily'; f.due = ''; } else if (i.repeat === '') f.repeat = '';
+        if (typeof i.due === 'string' && (i.due === '' || /^\d{4}-\d\d-\d\d$/.test(i.due))) f.due = i.due;
+        if (Object.keys(f).length) await patch(t.id, f);
+        if (typeof i.done === 'boolean') await setDone(Object.assign({}, t, f), i.done);
+        flashId = t.id; return { ok: true }; } },
+    { name: 'remove_task', description: 'Remove a task from the list (it can be restored). Use only when Ziva clearly asks to delete or drop it.',
+      inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] },
+      execute: async i => { const t = tasks.find(x => x.id === String(i.id)); if (!t) throw new Error('No task with that id'); await patch(t.id, { archived: true }); toast('"' + t.title + '" הוסרה', () => patch(t.id, { archived: false })); return { ok: true }; } },
+    { name: 'set_order', description: 'Set the order of tasks inside the list, most important first. Pass task ids in the new order; you may also change priorities with update_task.',
+      inputSchema: { type: 'object', properties: { ids: { type: 'array', items: { type: 'string' } } }, required: ['ids'] },
+      execute: async i => { const ids = Array.isArray(i.ids) ? i.ids.map(String) : []; for (let k = 0; k < ids.length; k++) { if (tasks.some(t => t.id === ids[k])) await patch(ids[k], { order: k }); } return { ok: true, ordered: ids.length }; } }
+  ];
+
+  const ERR = { not_granted: 'כדי שאוכל לענות, צריך לאשר לדף להשתמש ב-Claude. אפשר בינתיים להוסיף משימות בטופס.', sampling_disabled: 'הצ\'אט לא זמין בחשבון הזה כרגע.', rate_limited: 'הרבה הודעות ברגע אחד. נסי שוב בעוד דקה.', session_expired: 'צריך להתחבר מחדש ל-claude.ai.', refused: 'את זה אני לא יכול לעשות. נסי לנסח אחרת.', tools_unavailable: 'כאן אני יכול רק לענות, לא לשנות את הרשימה. אפשר להוסיף בטופס.' };
+
+  async function send(text) {
+    text = String(text || '').trim(); if (!text || busy) return;
+    if (!sample) { drawChat('<div class="msg note">הצ\'אט עובד כשהדף פתוח ב-claude.ai.</div>'); return; }
+    busy = true; $('send').disabled = true; $('say').value = ''; autoGrow();
+    chat.push({ role: 'user', content: text, at: new Date().toISOString() });
+    drawChat('<div class="msg ai thinking" id="pending"><span class="dots"><i></i><i></i><i></i></span></div>');
+    ctl = new AbortController();
+    const turns = chat.slice(-16).map(m => ({ role: m.role, content: m.content }));
+    while (turns.length && turns[0].role !== 'user') turns.shift();
+    try {
+      const { text: reply } = await sample([{ role: 'user', content: rules() }, ...turns], {
+        modelTier: 'quick', tools: TOOLS, signal: ctl.signal,
+        onText: ({ text: t }) => { const el = $('pending'); if (el) { el.classList.remove('thinking'); el.textContent = t; $('msgs').scrollTop = $('msgs').scrollHeight; } }
+      });
+      chat.push({ role: 'assistant', content: reply.trim(), at: new Date().toISOString() });
+    } catch (e) {
+      const kept = e && e.text ? e.text.trim() : '';
+      if (kept && e.code !== 'refused') chat.push({ role: 'assistant', content: kept, at: new Date().toISOString() });
+      if (e && e.code !== 'cancelled') { chat.push({ role: 'assistant', content: ERR[e && e.code] || 'משהו השתבש בחיבור. נסי שוב.', at: new Date().toISOString() }); }
+      if (e && (e.code === 'not_granted' || e.code === 'sampling_disabled')) { sample = null; }
+    } finally {
+      busy = false; $('send').disabled = false; drawChat(); saveChat(); render();
+      if (flashId) setTimeout(() => { flashId = null; render(); }, 1600);
+    }
+  }
+  $('composer').addEventListener('submit', e => { e.preventDefault(); send($('say').value); });
+  $('say').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send($('say').value); } });
+  function autoGrow() { const t = $('say'); t.style.height = 'auto'; t.style.height = Math.min(160, t.scrollHeight) + 'px'; }
+  $('say').addEventListener('input', autoGrow);
+  $('chips').addEventListener('click', e => { const c = e.target.closest('.chip'); if (!c) return; const t = c.textContent; if (/:\s*$/.test(t)) { $('say').value = t; $('say').focus(); autoGrow(); } else send(t); });
+  $('clear-chat').addEventListener('click', () => { if (busy) return; chat = []; drawChat(); saveChat(); });
+
+  /* ---------- dictation ---------- */
+  (async () => {
+    const d = await claude.use('dictation').catch(() => null); if (!d) return;
+    const mic = $('mic'); mic.hidden = false; let base = '';
+    d.onState(({ state, reason }) => {
+      const on = state !== 'idle'; mic.classList.toggle('on', on); mic.setAttribute('aria-label', on ? 'לעצור' : 'לדבר במקום לכתוב');
+      if (state === 'idle' && (reason === 'not_granted' || reason === 'unavailable')) mic.hidden = true;
+    });
+    d.onPartial(({ text }) => { $('say').value = base + text; autoGrow(); });
+    d.onFinal(({ text }) => { base = (base + text).replace(/^\s+/, ''); $('say').value = base; autoGrow(); });
+    mic.addEventListener('click', () => {
+      if (d.active()) { d.stop().catch(() => {}); return; }
+      base = $('say').value ? $('say').value + ' ' : '';
+      d.start().catch(e => { if (e && (e.code === 'not_granted' || e.code === 'unavailable')) mic.hidden = true; });
+    });
+  })();
+
+  /* new day: refresh labels at midnight and when she comes back to the page */
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && iso(new Date()) !== TODAY) { greet(); render(); } });
+  render();
+})();
+</script>

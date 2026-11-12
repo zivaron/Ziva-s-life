@@ -326,6 +326,22 @@ a.ev:hover { transform: translateY(-3px); border-color: var(--c1); }
 .sp .meta span { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .lightbox { position: fixed; inset: 0; z-index: 40; background: rgba(10,12,18,.88); display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
 .lightbox[hidden] { display: none; }
+.opener { position: fixed; inset: 0; z-index: 45; background: rgba(10,12,18,.55); display: grid; place-items: center; padding: 16px; }
+.opener[hidden] { display: none; }
+.op-in { position: relative; width: min(520px, 100%); max-height: 90vh; overflow: auto; background: var(--surface); color: var(--ink, inherit); border-radius: 18px; padding: 22px 22px 18px; box-shadow: 0 24px 70px rgba(0,0,0,.35); display: grid; gap: 10px; animation: pop .25s both; }
+.op-x { position: absolute; top: 10px; left: 10px; border: 0; background: transparent; font-size: 18px; cursor: pointer; color: var(--muted); padding: 6px 10px; border-radius: 8px; }
+.op-x:hover { background: var(--line); }
+.op-ico { font-size: 34px; line-height: 1; }
+.op-in h3 { margin: 0; font-family: var(--font-display); font-size: 22px; font-weight: 800; }
+.op-lead { margin: 0; font-size: 16px; }
+.op-steps { margin: 0; padding-inline-start: 22px; display: grid; gap: 6px; color: var(--muted); }
+.op-note { margin: 0; font-size: 13px; color: var(--muted); }
+.op-acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.op-btn { font-family: var(--font-display); font-weight: 700; font-size: 15px; text-decoration: none; padding: 9px 14px; border-radius: 10px; background: var(--t-rose1); color: #fff; cursor: pointer; }
+.op-btn.ghost { background: transparent; color: var(--t-rose1); outline: 1px solid currentColor; }
+.op-path { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; background: color-mix(in srgb, var(--line) 50%, transparent); border-radius: 10px; padding: 8px 10px; }
+.op-path code { flex: 1 1 220px; min-width: 0; overflow-wrap: anywhere; font-size: 13px; user-select: all; unicode-bidi: plaintext; text-align: left; }
+.op-path button { border: 0; cursor: pointer; font-family: var(--font-display); font-weight: 700; padding: 7px 12px; border-radius: 8px; background: var(--t-rose1); color: #fff; }
 .lb-in { display: grid; gap: 12px; justify-items: center; max-width: min(92vw, 900px); }
 .lb-img { max-height: 72vh; max-width: 100%; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,.5); background: linear-gradient(160deg, var(--t-rose2), var(--t-sun2)); min-width: 240px; min-height: 240px; display: grid; place-items: center; overflow: hidden; }
 .lb-img img { max-height: 72vh; max-width: 100%; display: block; animation: fadeIn .5s ease both; }
@@ -756,6 +772,34 @@ a.ev:hover { transform: translateY(-3px); border-color: var(--c1); }
       </div>
     </div>
   </div>
+
+  <div class="opener" id="opener" hidden role="dialog" aria-modal="true" aria-labelledby="op-title">
+    <div class="op-in">
+      <button type="button" class="op-x" id="op-close" aria-label="סגירה">✕</button>
+      <span class="op-ico" aria-hidden="true">📂</span>
+      <h3 id="op-title"></h3>
+      <div id="op-local">
+        <p class="op-lead">התיקייה נפתחת עכשיו בסייר הקבצים.</p>
+        <ol class="op-steps">
+          <li>אם קופץ למעלה חלון "לפתוח את סייר הקבצים?", לוחצים <b>פתיחת סייר הקבצים</b>.</li>
+          <li>כדי שלא ישאל כל פעם, מסמנים קודם <b>לאפשר תמיד</b>.</li>
+        </ol>
+        <div class="op-acts">
+          <a class="op-btn" id="op-again">לפתוח שוב בסייר הקבצים</a>
+          <a class="op-btn ghost" id="op-browse">לראות את הקבצים כאן בדפדפן</a>
+        </div>
+      </div>
+      <div id="op-web">
+        <p class="op-lead">מהאתר שבאינטרנט הדפדפן לא מרשה לפתוח תיקיות במחשב. זו הגנה של הדפדפן, והיא נכונה לכל אתר.</p>
+        <ol class="op-steps">
+          <li><b>הדרך הקלה:</b> לפתוח את האתר מהמחשב, מהקובץ "מפת-סידור-התמונות" בתיקיית המסמכים. משם כל כפתור פותח את התיקייה.</li>
+          <li><b>או עכשיו:</b> מעתיקים את הנתיב, פותחים את סייר הקבצים, מדביקים בשורת הכתובת למעלה ולוחצים Enter.</li>
+        </ol>
+        <p class="op-note">התיקיות נמצאות רק במחשב של זיוה. ממחשב אחר הן לא ייפתחו.</p>
+      </div>
+      <div class="op-path"><code id="op-path" dir="ltr"></code><button type="button" id="op-copy">העתקת הנתיב</button></div>
+    </div>
+  </div>
 </div>
 
 <script type="application/json" id="daily-data">
@@ -792,7 +836,7 @@ a.ev:hover { transform: translateY(-3px); border-color: var(--c1); }
   const INDIA = P + '\\הודו', SUNNY = P + '\\סאני גדלה', TRIPS = D + '\\טיולים';
   const BEACH = D + '\\תמונות חוף 50 בוק סאני ואמא יומהולדת', WED = D + '\\\u200F\u200Fחתונה וחינה - עותק';
   const isLocal = location.protocol === 'file:';
-  const TGT = isLocal ? '' : ' target="_blank" rel="noopener"';
+  const TGT = '';
   function openUrl(dir, q) { return 'search-ms:query=' + encodeURIComponent(q || '*') + '&crumb=location:' + encodeURIComponent(dir); }
   function hrefOpen(dir, q) { return `href="${openUrl(dir, q)}"${TGT}`; }
   function fileUrl(path) { return 'file:///' + encodeURI(path.replace(/\\/g, '/')).replace(/#/g, '%23'); }
@@ -1264,6 +1308,41 @@ a.ev:hover { transform: translateY(-3px); border-color: var(--c1); }
     const fallback = () => { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = 'סומן, העתיקי'; };
     try { navigator.clipboard.writeText(txt).then(done, fallback); } catch (e) { fallback(); }
   }));
+
+  /* ---------- folder buttons: one place that handles every "open the folder" link ---------- */
+  (function opener() {
+    const box = $('opener'); let lastUrl = '', lastFocus = null;
+    function parse(href) {
+      const m = /crumb=location:([^&]*)/.exec(href); const q = /query=([^&]*)/.exec(href);
+      return { dir: m ? decodeURIComponent(m[1]) : '', q: q ? decodeURIComponent(q[1]) : '*' };
+    }
+    function show(href, launched) {
+      const { dir, q } = parse(href); lastUrl = href;
+      const name = dir.split('\\').pop().replace(/[\u200E\u200F]/g, '');
+      $('op-title').textContent = name + (q && q !== '*' ? ' · ' + q : '');
+      $('op-path').textContent = dir.replace(/[\u200E\u200F]/g, '');
+      $('op-local').hidden = !isLocal; $('op-web').hidden = isLocal;
+      $('op-again').setAttribute('href', href);
+      $('op-browse').setAttribute('href', fileUrl(dir));
+      $('op-copy').textContent = 'העתקת הנתיב';
+      lastFocus = document.activeElement; box.hidden = false; $('op-close').focus();
+    }
+    function hide() { box.hidden = true; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    document.addEventListener('click', e => {
+      const a = e.target.closest && e.target.closest('a[href^="search-ms:"]');
+      if (!a || a.id === 'op-again') return;
+      if (isLocal) { show(a.getAttribute('href'), true); return; }   // the click itself opens File Explorer
+      e.preventDefault(); show(a.getAttribute('href'), false);        // from the web the browser blocks it: explain instead
+    }, true);
+    $('op-close').addEventListener('click', hide);
+    box.addEventListener('click', e => { if (e.target === box) hide(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !box.hidden) hide(); });
+    $('op-copy').addEventListener('click', () => {
+      const el = $('op-path'), b = $('op-copy'), txt = el.textContent;
+      const sel = () => { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = 'סומן, להעתיק עם Ctrl+C'; };
+      try { navigator.clipboard.writeText(txt).then(() => { b.textContent = 'הועתק ✓'; }, sel); } catch (e) { sel(); }
+    });
+  })();
 
   /* ---------- today (filled from the daily-data block, which the morning task refreshes) ---------- */
   (function today() {

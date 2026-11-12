@@ -16,6 +16,7 @@
   --t-sky1: #2F6DB5; --t-sky2: #4F8FD8; --t-leaf1: #1C8560; --t-leaf2: #3CB084; --t-rose1: #B53F69; --t-rose2: #DA6A92;
   --t-sun1: #D08A0B; --t-sun2: #F0B53D; --t-plum1: #6650B5; --t-plum2: #8D75D9; --t-clay1: #BF572B; --t-clay2: #E07C4B;
   --t-slate1: #586374; --t-slate2: #7E899A; --on-tile: #FFFFFF; --on-sun: #2A1B00;
+  --tk-sunk: #EAEEF5; --tk-urgent: #C23B47; --tk-urgent-soft: #FBE7E9; --tk-important: #A86A0A; --tk-important-soft: #FFF0CF; --tk-normal: #6A7387; --tk-normal-soft: #EDF0F5;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -24,6 +25,7 @@
     --chrome: #222836; --land: #26332B; --land-hi: #5A4A26; --sea: #141B26;
     --sky-a: #2A2236; --sky-b: #121A2A; --orb: #F2D488; --orb-glow: rgba(242,212,136,.25);
     --dusk-a: #161D33; --dusk-b: #241B33; --moon: #F2DE9C;
+    --tk-sunk: #222836; --tk-urgent: #EF6E77; --tk-urgent-soft: #3A2226; --tk-important: #F2B43F; --tk-important-soft: #3A2D10; --tk-normal: #A1A9BB; --tk-normal-soft: #222836;
     color-scheme: dark;
   }
 }
@@ -33,6 +35,7 @@
   --chrome: #222836; --land: #26332B; --land-hi: #5A4A26; --sea: #141B26;
   --sky-a: #2A2236; --sky-b: #121A2A; --orb: #F2D488; --orb-glow: rgba(242,212,136,.25);
   --dusk-a: #161D33; --dusk-b: #241B33; --moon: #F2DE9C;
+  --tk-sunk: #222836; --tk-urgent: #EF6E77; --tk-urgent-soft: #3A2226; --tk-important: #F2B43F; --tk-important-soft: #3A2D10; --tk-normal: #A1A9BB; --tk-normal-soft: #222836;
   color-scheme: dark;
 }
 
@@ -326,6 +329,86 @@ a.ev:hover { transform: translateY(-3px); border-color: var(--c1); }
 .sp .meta span { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .lightbox { position: fixed; inset: 0; z-index: 40; background: rgba(10,12,18,.88); display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
 .lightbox[hidden] { display: none; }
+
+/* tasks + chat (all classes start with tk-) */
+#view-tasks { display: grid; gap: 16px; }
+.tk-gate { background: var(--warn-soft); color: var(--ink); border-radius: 14px; padding: 12px 16px; }
+.tk-day { display: flex; align-items: center; gap: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 6px 18px 6px 8px; width: fit-content; max-width: 100%; }
+.tk-ring { width: 46px; height: 46px; flex: none; }
+.tk-ring circle { fill: none; stroke-width: 5; }
+.tk-ring .tk-bgc { stroke: var(--tk-sunk); }
+.tk-ring .tk-fg { stroke: var(--ok); stroke-linecap: round; transition: stroke-dashoffset .6s ease; transform: rotate(-90deg); transform-origin: 50% 50%; }
+.tk-ring text { font-family: var(--font-display); font-weight: 700; font-size: 13px; fill: var(--ink); }
+.tk-day b { font-family: var(--font-display); font-weight: 700; display: block; line-height: 1.2; }
+.tk-day span { color: var(--muted); font-size: 14px; display: block; line-height: 1.2; }
+.tk-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); gap: 16px; align-items: start; }
+@media (max-width: 860px) { .tk-grid { grid-template-columns: minmax(0, 1fr); } }
+.tk-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 18px; display: grid; gap: 14px; min-width: 0; }
+.tk-panel-h { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.tk-panel-h h2 { font-size: 21px; font-weight: 700; }
+.tk-hint { color: var(--muted); font-size: 14px; }
+.tk-msgs { display: grid; gap: 10px; align-content: start; max-height: min(56vh, 520px); min-height: 220px; overflow-y: auto; padding: 4px 2px; overscroll-behavior: contain; }
+.tk-msg { max-width: 88%; padding: 10px 14px; border-radius: 18px; white-space: pre-wrap; overflow-wrap: anywhere; animation: tk-rise .25s ease both; }
+.tk-msg.me { justify-self: start; background: var(--accent); color: var(--bg); border-bottom-right-radius: 6px; }
+.tk-msg.ai { justify-self: end; background: var(--tk-sunk); border-bottom-left-radius: 6px; }
+.tk-msg.thinking { color: var(--muted); }
+.tk-dots i { display: inline-block; width: 6px; height: 6px; margin: 0 2px; border-radius: 50%; background: currentColor; animation: tk-blink 1.2s infinite both; }
+.tk-dots i:nth-child(2) { animation-delay: .2s; } .tk-dots i:nth-child(3) { animation-delay: .4s; }
+@keyframes tk-blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+@keyframes tk-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.tk-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.tk-chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; font-size: 15px; cursor: pointer; }
+.tk-chip:hover { border-color: var(--accent); color: var(--accent); }
+.tk-composer { display: flex; gap: 8px; align-items: end; background: var(--tk-sunk); border-radius: 18px; padding: 6px; }
+.tk-composer textarea { flex: 1; min-width: 0; resize: none; border: 0; background: transparent; padding: 8px 10px; min-height: 44px; max-height: 160px; line-height: 1.45; font: inherit; color: inherit; }
+.tk-composer textarea:focus { outline: none; }
+.tk-composer:focus-within { box-shadow: 0 0 0 2px var(--accent); }
+.tk-icon { flex: none; width: 44px; height: 44px; border-radius: 14px; border: 0; display: grid; place-items: center; font-size: 19px; background: var(--surface); color: var(--ink); cursor: pointer; }
+.tk-icon.tk-send { background: var(--accent); color: var(--bg); }
+.tk-icon.tk-mic.on { background: var(--tk-urgent); color: #fff; animation: tk-pulse 1.4s infinite; }
+.tk-icon:disabled { opacity: .45; cursor: default; }
+@keyframes tk-pulse { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--tk-urgent) 45%, transparent); } 50% { box-shadow: 0 0 0 8px transparent; } }
+.tk-foot { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; color: var(--muted); font-size: 13px; }
+.tk-link { border: 0; background: none; padding: 0; color: var(--muted); text-decoration: underline; font-size: 13px; cursor: pointer; }
+.tk-add { display: flex; gap: 8px; flex-wrap: wrap; }
+.tk-add input[type=text] { flex: 1 1 200px; min-width: 0; border: 1px solid var(--line); background: var(--bg); border-radius: 12px; padding: 10px 12px; font: inherit; color: inherit; }
+.tk-add select { border: 1px solid var(--line); background: var(--bg); border-radius: 12px; padding: 10px; font: inherit; color: inherit; }
+.tk-btn { border: 0; border-radius: 12px; padding: 10px 16px; font-family: var(--font-display); font-weight: 700; background: var(--accent); color: var(--bg); cursor: pointer; }
+.tk-group { display: grid; gap: 8px; margin-top: 4px; }
+.tk-group h3 { font-size: 15px; font-weight: 700; color: var(--muted); display: flex; gap: 8px; align-items: center; }
+.tk-group h3 .n { font-family: var(--font-display); background: var(--tk-sunk); color: var(--ink); border-radius: 999px; padding: 0 8px; font-size: 13px; }
+.tk-list { display: grid; gap: 8px; list-style: none; margin: 0; padding: 0; }
+.tk-task { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 14px; background: var(--bg); border: 1px solid transparent; animation: tk-rise .25s ease both; }
+.tk-task.urgent { background: var(--tk-urgent-soft); }
+.tk-task.flash { border-color: var(--accent); }
+.tk-check { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--tk-normal); background: var(--surface); display: grid; place-items: center; font-size: 15px; color: transparent; padding: 0; cursor: pointer; }
+.tk-task.urgent .tk-check { border-color: var(--tk-urgent); }
+.tk-task.important .tk-check { border-color: var(--tk-important); }
+.tk-check:hover { color: var(--ok); border-color: var(--ok); }
+.tk-task.done .tk-check { background: var(--ok); border-color: var(--ok); color: #fff; }
+.tk-task.done .tk-title { text-decoration: line-through; color: var(--muted); }
+.tk-body { min-width: 0; display: grid; gap: 4px; }
+.tk-title { font-weight: 600; overflow-wrap: anywhere; }
+.tk-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 13px; color: var(--muted); }
+.tk-pill { border: 0; border-radius: 999px; padding: 1px 10px; font-family: var(--font-display); font-weight: 600; font-size: 13px; cursor: pointer; }
+.tk-pill.urgent { background: var(--tk-urgent); color: #fff; }
+.tk-pill.important { background: var(--tk-important-soft); color: var(--tk-important); }
+.tk-pill.normal { background: var(--tk-normal-soft); color: var(--tk-normal); }
+.tk-due.late { color: var(--tk-urgent); font-weight: 700; }
+.tk-note { color: var(--muted); font-size: 14px; overflow-wrap: anywhere; }
+.tk-acts { display: flex; gap: 2px; }
+.tk-mini { border: 0; background: transparent; width: 34px; height: 34px; border-radius: 10px; color: var(--muted); font-size: 16px; cursor: pointer; }
+.tk-mini:hover { background: var(--tk-sunk); color: var(--ink); }
+.tk-empty { text-align: center; padding: 26px 12px; color: var(--muted); display: grid; gap: 6px; justify-items: center; }
+.tk-empty b { color: var(--ink); font-family: var(--font-display); font-size: 18px; }
+.tk-status { font-size: 14px; color: var(--muted); }
+.tk-status.warn { color: var(--tk-urgent); }
+.tk-toast { position: fixed; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 14px; border-radius: 14px; display: flex; gap: 14px; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 30; max-width: calc(100% - 32px); }
+.tk-toast button { border: 0; background: transparent; color: var(--t-sun2); font-weight: 700; font-family: var(--font-display); cursor: pointer; }
+.tk-edit { display: flex; gap: 6px; flex-wrap: wrap; }
+.tk-edit input, .tk-edit select { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 6px 8px; min-width: 0; font: inherit; color: inherit; }
+.tk-edit input[type=text] { flex: 1 1 180px; }
+@media (prefers-reduced-motion: reduce) { #view-tasks *, #view-tasks *::before, #view-tasks *::after { animation: none !important; transition: none !important; } }
 .opener { position: fixed; inset: 0; z-index: 45; background: rgba(10,12,18,.55); display: grid; place-items: center; padding: 16px; }
 .opener[hidden] { display: none; }
 .op-in { position: relative; width: min(520px, 100%); max-height: 90vh; overflow: auto; background: var(--surface); color: var(--ink, inherit); border-radius: 18px; padding: 22px 22px 18px; box-shadow: 0 24px 70px rgba(0,0,0,.35); display: grid; gap: 10px; animation: pop .25s both; }
@@ -530,7 +613,7 @@ a.ev:hover { transform: translateY(-3px); border-color: var(--c1); }
         <div class="brand"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>התמונות של זיוה</span></div>
         <nav class="supernav" aria-label="אזורים ראשיים">
           <a href="#folders" data-super="photos"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="10" r="2" fill="currentColor"/><path d="M4 17l5-4 4 3 3-2 4 3" fill="none" stroke="currentColor" stroke-width="2"/></svg>פרויקט תמונות</a>
-          <a href="#today" data-super="assistant"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>עוזר אישי · סקירה יומית</a>
+          <a href="#tasks" data-super="assistant"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>עוזר אישי · סקירה יומית</a>
         </nav>
       </div>
       <nav class="subnav" id="subnav" aria-label="עמודים"></nav>
@@ -733,6 +816,49 @@ a.ev:hover { transform: translateY(-3px); border-color: var(--c1); }
       <div class="ideas" id="ideas-photos"></div>
     </section>
 
+    <!-- 6b. TASKS + CHAT -->
+    <section class="view" id="view-tasks" hidden>
+      <div class="view-head">
+        <span class="eyebrow">עוזר אישי · המשימות שלך</span>
+        <h1>המשימות שלי והצ'אט</h1>
+        <p>כותבים או מדברים אל העוזר, והוא מוסיף משימות, מסדר אותן לפי חשיבות ואומר מה הכי דחוף. הוא רואה את כל הרשימה שלך, והיא פרטית ונשמרת לבד.</p>
+      </div>
+      <div class="tk-gate" id="tk-gate" hidden></div>
+      <div class="tk-day" aria-live="polite">
+        <svg class="tk-ring" viewBox="0 0 46 46" aria-hidden="true"><circle class="tk-bgc" cx="23" cy="23" r="19"/><circle class="tk-fg" id="tk-ring" cx="23" cy="23" r="19" stroke-dasharray="119.4" stroke-dashoffset="119.4"/><text id="tk-ring-n" x="23" y="27.5" text-anchor="middle">0</text></svg>
+        <div><b id="tk-day-title">יום פתוח</b><span id="tk-day-sub">אין עדיין משימות להיום</span></div>
+      </div>
+      <div class="tk-grid" id="tk-grid">
+        <section class="tk-panel" aria-labelledby="tk-chat-h">
+          <div class="tk-panel-h"><h2 id="tk-chat-h">לדבר עם העוזר</h2><span class="tk-hint">אפשר לכתוב, או ללחוץ על המיקרופון ולדבר</span></div>
+          <div class="tk-msgs" id="tk-msgs" aria-live="polite"></div>
+          <div class="tk-chips" id="tk-chips">
+            <button type="button" class="tk-chip">מה הכי חשוב היום?</button>
+            <button type="button" class="tk-chip">תסדר לי את היום לפי חשיבות</button>
+            <button type="button" class="tk-chip">מה כבר עשיתי היום?</button>
+            <button type="button" class="tk-chip">תוסיף משימה יומית: </button>
+          </div>
+          <form class="tk-composer" id="tk-composer" autocomplete="off">
+            <button type="button" class="tk-icon tk-mic" id="tk-mic" aria-label="לדבר במקום לכתוב" title="לדבר במקום לכתוב" hidden>🎙</button>
+            <textarea id="tk-say" rows="1" placeholder="למשל: להתקשר לרוני מחר בבוקר, חשוב" aria-label="הודעה לעוזר"></textarea>
+            <button type="submit" class="tk-icon tk-send" id="tk-send" aria-label="שליחה">➤</button>
+          </form>
+          <div class="tk-foot"><span id="tk-chat-status">העוזר מוסיף, משנה ומסדר את המשימות בשבילך.</span><button type="button" class="tk-link" id="tk-clear">ניקוי השיחה</button></div>
+        </section>
+        <section class="tk-panel" aria-labelledby="tk-tasks-h">
+          <div class="tk-panel-h"><h2 id="tk-tasks-h">המשימות שלי</h2><span class="tk-status" id="tk-db-status">טוען…</span></div>
+          <form class="tk-add" id="tk-add" autocomplete="off">
+            <input type="text" id="tk-add-title" placeholder="משימה חדשה" aria-label="משימה חדשה">
+            <select id="tk-add-prio" aria-label="חשיבות"><option value="normal">רגיל</option><option value="important">חשוב</option><option value="urgent">דחוף</option></select>
+            <select id="tk-add-when" aria-label="מתי"><option value="today">היום</option><option value="tomorrow">מחר</option><option value="daily">כל יום</option><option value="">מתי שיהיה</option></select>
+            <button type="submit" class="tk-btn">הוספה</button>
+          </form>
+          <div id="tk-groups"></div>
+        </section>
+      </div>
+      <div class="tk-toast" id="tk-toast" hidden role="status"><span id="tk-toast-t"></span><button type="button" id="tk-toast-undo">ביטול</button></div>
+    </section>
+
     <!-- 7. TODAY -->
     <section class="view" id="view-today" hidden>
       <div class="view-head">
@@ -744,7 +870,7 @@ a.ev:hover { transform: translateY(-3px); border-color: var(--c1); }
         <div class="card-head"><h2>המשימות שלי והצ'אט עם העוזר</h2>
           <p>כותבים או מדברים אל העוזר: "להתקשר לרוני מחר, חשוב". הוא מוסיף, מסדר לפי חשיבות ואומר מה הכי דחוף. הרשימה נשמרת לבד, והיא פרטית שלך.</p></div>
         <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
-          <a class="open-btn" href="https://claude.ai/artifact/VY8rKsN8YTRtMtx99vBsYU" target="_blank" rel="noopener">לפתוח את המשימות והצ'אט</a>
+          <a class="open-btn" href="#tasks">לפתוח את המשימות והצ'אט</a>
         </div>
       </div>
       <div class="today">
@@ -823,7 +949,7 @@ a.ev:hover { transform: translateY(-3px); border-color: var(--c1); }
     { "title": "בלילה: סאני גדלה ומפות הטיולים", "text": "בחרתי 20 תמונות של סאני לפי הגיל ושמרתי עותקים בתיקייה \"סאני גדלה\". הוספתי מפה של הטיול בהודו, מפת כל הטיולים וציר זמן של המשפחה. כל לחיצה פותחת את התמונות במחשב." }
   ],
   "today": [
-    { "title": "לרשום משימות בצ'אט", "text": "יש עכשיו צ'אט עם העוזר: כותבים או מדברים, והוא מוסיף משימות ומסדר אותן לפי חשיבות.", "link": "https://claude.ai/artifact/VY8rKsN8YTRtMtx99vBsYU", "linkText": "למשימות והצ'אט" },
+    { "title": "לרשום משימות בצ'אט", "text": "יש עכשיו צ'אט עם העוזר: כותבים או מדברים, והוא מוסיף משימות ומסדר אותן לפי חשיבות.", "link": "#tasks", "linkText": "למשימות והצ'אט" },
     { "title": "להציץ בסאני גדלה", "text": "כל 2,838 התמונות של סאני, בתיקייה לכל שנה. כל שנה נגמרת ביום ההולדת: עוגת הנר \"1\", יום ההולדת בחוף בארץ, והפיקניק בלונדון.", "link": "#journeys", "linkText": "לסאני גדלה" },
     { "title": "יום רגוע", "text": "במקום פילאטיס: 5 דקות נשימה עדינה, או הופעה מוקלטת מהספה. רעיונות בטאב רעיונות לסקירת הבוקר.", "link": "#morning", "linkText": "לרעיונות העדינים" },
     { "title": "להחליט על תיקיית הודו", "text": "1,311 תמונות של הודו נמצאות פעמיים: בתיקייה הודו ובתיקיית 2026. אפשר להשאיר אותן כאלבום, או לפנות עוד 10 ג'יגה.", "link": "#move", "linkText": "למה עובר לאן" },
@@ -1367,7 +1493,7 @@ a.ev:hover { transform: translateY(-3px); border-color: var(--c1); }
   /* ---------- routing: two main areas, sub-tabs ---------- */
   const AREAS = {
     photos: [['folders', 'כל התיקיות'], ['diagram', 'התרשים'], ['journeys', 'מסעות ומשפחה', true], ['look', 'ככה זה ייראה'], ['move', 'מה עובר לאן'], ['ideas', 'רעיונות לתמונות']],
-    assistant: [['today', 'הסקירה היומית'], ['morning', 'רעיונות לסקירת הבוקר']]
+    assistant: [['tasks', 'משימות וצ\'אט', true], ['today', 'הסקירה היומית'], ['morning', 'רעיונות לסקירת הבוקר']]
   };
   const areaOf = v => Object.keys(AREAS).find(a => AREAS[a].some(([k]) => k === v));
   let first = true;
@@ -1384,5 +1510,220 @@ a.ev:hover { transform: translateY(-3px); border-color: var(--c1); }
   }
   window.addEventListener('hashchange', route);
   route();
+})();
+</script>
+
+<script>
+/* ---------- tasks + chat (private to the owner; saved in the artifact's own database) ---------- */
+(function () {
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const PRIO = { urgent: { he: 'דחוף', rank: 0 }, important: { he: 'חשוב', rank: 1 }, normal: { he: 'רגיל', rank: 2 } };
+  const DAYS = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+  const MONTHS = ['בינואר', 'בפברואר', 'במרץ', 'באפריל', 'במאי', 'ביוני', 'ביולי', 'באוגוסט', 'בספטמבר', 'באוקטובר', 'בנובמבר', 'בדצמבר'];
+  const pad = n => String(n).padStart(2, '0');
+  const iso = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+  let now = new Date(), TODAY = iso(now);
+  const heDate = s => { const [y, m, d] = s.split('-').map(Number); const dt = new Date(y, m - 1, d); return 'יום ' + DAYS[dt.getDay()] + ', ' + d + ' ' + MONTHS[m - 1]; };
+  const dueLabel = s => { if (!s) return ''; if (s === TODAY) return 'היום'; if (s === iso(addDays(now, 1))) return 'מחר'; if (s === iso(addDays(now, -1))) return 'מאתמול'; if (s < TODAY) return 'מ-' + s.split('-').reverse().slice(0, 2).join('.'); const [y, m, d] = s.split('-').map(Number); const dt = new Date(y, m - 1, d); return (dt - now) / 864e5 < 6 ? 'ביום ' + DAYS[dt.getDay()] : d + '.' + m; };
+
+  let tasks = [], tasksCol = null, chatDoc = null, chat = [], busy = false, sample = null, editing = null, flashId = null;
+  const isDoneToday = t => t.repeat === 'daily' ? t.doneOn === TODAY : !!t.done;
+  const live = () => tasks.filter(t => !t.archived);
+  const sortKey = (a, b) => (PRIO[a.priority] || PRIO.normal).rank - (PRIO[b.priority] || PRIO.normal).rank || (a.order ?? 999) - (b.order ?? 999) || String(a.createdAt).localeCompare(String(b.createdAt));
+  function groupsOf() {
+    const L = live();
+    return {
+      today: L.filter(t => !isDoneToday(t) && (t.repeat === 'daily' || (t.due && t.due <= TODAY))).sort(sortKey),
+      later: L.filter(t => !isDoneToday(t) && t.repeat !== 'daily' && t.due && t.due > TODAY).sort((a, b) => a.due.localeCompare(b.due) || sortKey(a, b)),
+      someday: L.filter(t => !isDoneToday(t) && t.repeat !== 'daily' && !t.due).sort(sortKey),
+      done: L.filter(t => isDoneToday(t) && (t.repeat === 'daily' || String(t.doneAt || '').slice(0, 10) === TODAY))
+    };
+  }
+
+  function taskRow(t) {
+    const p = PRIO[t.priority] ? t.priority : 'normal';
+    const late = t.due && t.due < TODAY && !isDoneToday(t) && t.repeat !== 'daily';
+    if (editing === t.id) {
+      return `<li class="tk-task ${p}" data-id="${esc(t.id)}"><span></span><div class="tk-body"><div class="tk-edit">
+        <input type="text" id="tk-ed-title" value="${esc(t.title)}" aria-label="שם המשימה">
+        <select id="tk-ed-prio" aria-label="חשיבות">${Object.keys(PRIO).map(k => `<option value="${k}"${k === p ? ' selected' : ''}>${PRIO[k].he}</option>`).join('')}</select>
+        <input type="date" id="tk-ed-due" value="${esc(t.repeat === 'daily' ? '' : t.due || '')}" aria-label="תאריך">
+        <label class="tk-meta"><input type="checkbox" id="tk-ed-daily"${t.repeat === 'daily' ? ' checked' : ''}> כל יום</label>
+        <input type="text" id="tk-ed-note" value="${esc(t.note || '')}" placeholder="הערה" aria-label="הערה">
+        </div></div><div class="tk-acts"><button type="button" class="tk-btn" data-act="save">שמירה</button></div></li>`;
+    }
+    return `<li class="tk-task ${p}${isDoneToday(t) ? ' done' : ''}${flashId === t.id ? ' flash' : ''}" data-id="${esc(t.id)}">
+      <button type="button" class="tk-check" data-act="toggle" aria-label="${isDoneToday(t) ? 'להחזיר לרשימה' : 'סימון שבוצע'}">✓</button>
+      <div class="tk-body"><span class="tk-title">${esc(t.title)}</span>
+        <div class="tk-meta"><button type="button" class="tk-pill ${p}" data-act="prio" title="לשנות חשיבות">${PRIO[p].he}</button>
+        ${t.repeat === 'daily' ? '<span>↻ כל יום</span>' : t.due ? `<span class="tk-due${late ? ' late' : ''}">📅 ${esc(dueLabel(t.due))}</span>` : ''}</div>
+        ${t.note ? `<span class="tk-note">${esc(t.note)}</span>` : ''}</div>
+      <div class="tk-acts"><button type="button" class="tk-mini" data-act="edit" aria-label="עריכה" title="עריכה">✎</button><button type="button" class="tk-mini" data-act="remove" aria-label="הסרה" title="הסרה">✕</button></div></li>`;
+  }
+  function render() {
+    const g = groupsOf();
+    const sec = (title, arr, emptyNote) => arr.length || emptyNote ? `<div class="tk-group"><h3>${title}<span class="n">${arr.length}</span></h3>${arr.length ? `<ul class="tk-list">${arr.map(taskRow).join('')}</ul>` : `<p class="tk-status">${emptyNote}</p>`}</div>` : '';
+    $('tk-groups').innerHTML = !live().length
+      ? `<div class="tk-empty"><b>עוד אין משימות</b><span>כתבי לעוזר בצד, למשל: "להתקשר לרוני מחר, חשוב",<br>או הוסיפי כאן למעלה.</span></div>`
+      : sec('היום', g.today, 'הכול בוצע להיום 🎉') + sec('בימים הקרובים', g.later) + sec('מתי שיהיה', g.someday) + sec('בוצע היום', g.done);
+    const total = g.today.length + g.done.length, done = g.done.length;
+    $('tk-ring').style.strokeDashoffset = (119.4 * (1 - (total ? done / total : 0))).toFixed(1);
+    $('tk-ring-n').textContent = total ? done + '/' + total : '0';
+    const urgent = g.today.filter(t => t.priority === 'urgent').length;
+    $('tk-day-title').textContent = !total ? 'יום פתוח' : done === total ? 'הכול בוצע!' : (total - done) + ' משימות להיום';
+    $('tk-day-sub').textContent = !total ? 'אין משימות להיום' : urgent ? urgent + ' דחופות' : done ? done + ' כבר בוצעו' : 'בהצלחה';
+    if (editing) { const el = $('tk-ed-title'); if (el && document.activeElement !== el) el.focus(); }
+  }
+
+  const chains = {};
+  const serial = (key, fn) => { const p = (chains[key] || Promise.resolve()).then(fn, fn); chains[key] = p.catch(() => {}); return p; };
+  function writeFail(e) { $('tk-db-status').textContent = e && e.code === 'quota_exceeded' ? 'אין מקום לעוד משימות. כדאי למחוק ישנות.' : 'השינוי לא נשמר. נסי שוב.'; $('tk-db-status').classList.add('warn'); }
+  function canWrite() { if (!tasksCol) { $('tk-db-status').textContent = 'השמירה עובדת רק כשהדף פתוח ב-claude.ai ואת מחוברת.'; $('tk-db-status').classList.add('warn'); return false; } return true; }
+  function newTask(f) {
+    const t = { title: String(f.title || '').trim().slice(0, 200), priority: PRIO[f.priority] ? f.priority : 'normal', due: f.repeat === 'daily' ? '' : (f.due || ''), repeat: f.repeat === 'daily' ? 'daily' : '', note: String(f.note || '').slice(0, 300), done: false, doneAt: '', doneOn: '', order: 999, createdAt: new Date().toISOString(), archived: false };
+    if (!t.title) throw new Error('חסר שם למשימה');
+    const ref = tasksCol.doc(); t.id = ref.id; const body = Object.assign({}, t); delete body.id;
+    return serial(ref.id, () => ref.set(body)).then(() => t);
+  }
+  const patch = (id, fields) => serial(id, () => tasksCol.doc(id).update(fields));
+  const setDone = (t, on) => t.repeat === 'daily' ? patch(t.id, { doneOn: on ? TODAY : '' }) : patch(t.id, { done: on, doneAt: on ? new Date().toISOString() : '' });
+
+  let undoFn = null, toastTimer = null;
+  function toast(text, undo) { $('tk-toast-t').textContent = text; undoFn = undo || null; $('tk-toast-undo').hidden = !undo; $('tk-toast').hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { $('tk-toast').hidden = true; undoFn = null; }, 6000); }
+  $('tk-toast-undo').addEventListener('click', () => { const f = undoFn; $('tk-toast').hidden = true; undoFn = null; if (f) f().catch(writeFail); });
+
+  $('tk-groups').addEventListener('click', e => {
+    const b = e.target.closest('[data-act]'); if (!b) return;
+    const li = b.closest('.tk-task'); const t = tasks.find(x => x.id === li.dataset.id); if (!t || !canWrite()) return;
+    const act = b.dataset.act;
+    if (act === 'toggle') { const on = !isDoneToday(t); setDone(t, on).catch(writeFail); if (on) toast('כל הכבוד! "' + t.title + '" בוצע', () => setDone(t, false)); }
+    if (act === 'prio') { const order = ['normal', 'important', 'urgent']; patch(t.id, { priority: order[(order.indexOf(t.priority) + 1) % 3] }).catch(writeFail); }
+    if (act === 'remove') { patch(t.id, { archived: true }).catch(writeFail); toast('"' + t.title + '" הוסרה', () => patch(t.id, { archived: false })); }
+    if (act === 'edit') { editing = t.id; render(); }
+    if (act === 'save') {
+      const daily = $('tk-ed-daily').checked;
+      const f = { title: $('tk-ed-title').value.trim() || t.title, priority: $('tk-ed-prio').value, due: daily ? '' : $('tk-ed-due').value, repeat: daily ? 'daily' : '', note: $('tk-ed-note').value.trim() };
+      editing = null; render(); patch(t.id, f).catch(writeFail);
+    }
+  });
+  $('tk-groups').addEventListener('keydown', e => { if (e.key === 'Enter' && editing && e.target.closest('.tk-edit')) { e.preventDefault(); $('tk-groups').querySelector('[data-act="save"]').click(); } if (e.key === 'Escape' && editing) { editing = null; render(); } });
+  $('tk-add').addEventListener('submit', e => {
+    e.preventDefault(); const title = $('tk-add-title').value.trim(); if (!title || !canWrite()) return;
+    const when = $('tk-add-when').value;
+    const f = { title, priority: $('tk-add-prio').value, repeat: when === 'daily' ? 'daily' : '', due: when === 'today' ? TODAY : when === 'tomorrow' ? iso(addDays(now, 1)) : '' };
+    $('tk-add-title').value = '';
+    newTask(f).then(t => { flashId = t.id; setTimeout(() => { flashId = null; render(); }, 1500); }).catch(writeFail);
+  });
+
+  /* ---------- chat ---------- */
+  const WELCOME = 'שלום זיוה! אני העוזר שלך. ספרי לי מה צריך לעשות, ואני ארשום, אסדר לפי חשיבות ואזכיר מה הכי דחוף. אפשר גם לשאול: "מה הכי חשוב היום?"';
+  function drawChat(pending) {
+    const box = $('tk-msgs'); const items = chat.length ? chat : [{ role: 'assistant', content: WELCOME }];
+    box.innerHTML = items.map(m => `<div class="tk-msg ${m.role === 'user' ? 'me' : 'ai'}">${esc(m.content)}</div>`).join('') + (pending || '');
+    box.scrollTop = box.scrollHeight;
+  }
+  drawChat();
+  const saveChat = () => chatDoc ? serial('chat', () => chatDoc.set({ messages: chat.slice(-40) })).catch(() => {}) : Promise.resolve();
+
+  function rules() {
+    const L = live().map(t => ({ id: t.id, title: t.title, priority: t.priority, due: t.repeat === 'daily' ? 'כל יום' : (t.due || 'בלי תאריך'), done_today: isDoneToday(t), note: t.note || undefined }));
+    return 'אתה העוזר האישי של זיוה, בתוך דף המשימות שלה. זיוה היא סבתא ישראלית שלא מבינה בטכנולוגיה.\n' +
+      'חוקים:\n' +
+      '1. תמיד לענות בעברית פשוטה וחמה בלבד, גם אם כותבים לך באנגלית. אסור לענות באנגלית.\n' +
+      '2. לפנות אליה בלשון נקבה ("את"). על עצמך לדבר בלשון זכר ("אני העוזר שלך").\n' +
+      '3. תשובות קצרות: עד 4 משפטים קצרים או רשימה קצרה. בלי מונחים טכניים ובלי סימנים כמו ** או #.\n' +
+      '4. התאריך היום: ' + TODAY + ' (' + heDate(TODAY) + '). מחר: ' + iso(addDays(now, 1)) + '. הפוך תאריכים יחסיים (מחר, ביום ראשון, בעוד שבוע) לפורמט YYYY-MM-DD.\n' +
+      '5. דחיפות: urgent = דחוף, important = חשוב, normal = רגיל. משימה עם repeat=daily חוזרת כל יום.\n' +
+      '6. להשתמש בכלים כדי לשנות את הרשימה: add_task לכל דבר שהיא מבקשת לעשות (אם יש כמה משימות בהודעה אחת, להוסיף כל אחת), update_task לשינוי או לסימון שבוצע, remove_task רק כשהיא מבקשת במפורש למחוק, set_order כשהיא מבקשת לסדר או לתעדף.\n' +
+      '7. כששואלים מה הכי חשוב: קודם דחוף, אחר כך מה שמועד שלו עבר או היום, אחר כך חשוב. לענות עם 1 עד 3 הראשונות ומשפט אחד על הסיבה.\n' +
+      '8. אחרי שינוי, לומר במשפט קצר אחד מה עשית. לא להמציא משימות שהיא לא ציינה.\n' +
+      'המשימות הנוכחיות שלה (JSON): ' + JSON.stringify(L);
+  }
+  const TOOLS = [
+    { name: 'add_task', description: 'Add one task to the list. Returns the new id.',
+      inputSchema: { type: 'object', properties: { title: { type: 'string', description: 'Short task title in Hebrew' }, priority: { type: 'string', enum: ['urgent', 'important', 'normal'] }, due: { type: 'string', description: 'YYYY-MM-DD or empty' }, repeat: { type: 'string', enum: ['', 'daily'] }, note: { type: 'string' } }, required: ['title'] },
+      execute: async i => { const t = await newTask({ title: String(i.title || ''), priority: String(i.priority || 'normal'), due: /^\d{4}-\d\d-\d\d$/.test(String(i.due || '')) ? String(i.due) : '', repeat: i.repeat === 'daily' ? 'daily' : '', note: String(i.note || '') }); flashId = t.id; return { ok: true, id: t.id }; } },
+    { name: 'update_task', description: 'Change a task: title, priority, due date, repeat, note, or mark done / not done today. Pass only the fields to change.',
+      inputSchema: { type: 'object', properties: { id: { type: 'string' }, title: { type: 'string' }, priority: { type: 'string', enum: ['urgent', 'important', 'normal'] }, due: { type: 'string' }, repeat: { type: 'string', enum: ['', 'daily'] }, note: { type: 'string' }, done: { type: 'boolean' } }, required: ['id'] },
+      execute: async i => { const t = tasks.find(x => x.id === String(i.id)); if (!t) throw new Error('No task with that id'); const f = {};
+        if (i.title) f.title = String(i.title).slice(0, 200); if (PRIO[i.priority]) f.priority = i.priority; if (typeof i.note === 'string') f.note = i.note.slice(0, 300);
+        if (i.repeat === 'daily') { f.repeat = 'daily'; f.due = ''; } else if (i.repeat === '') f.repeat = '';
+        if (typeof i.due === 'string' && (i.due === '' || /^\d{4}-\d\d-\d\d$/.test(i.due))) f.due = i.due;
+        if (Object.keys(f).length) await patch(t.id, f);
+        if (typeof i.done === 'boolean') await setDone(Object.assign({}, t, f), i.done);
+        flashId = t.id; return { ok: true }; } },
+    { name: 'remove_task', description: 'Remove a task (it can be restored). Only when she clearly asks to delete it.',
+      inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] },
+      execute: async i => { const t = tasks.find(x => x.id === String(i.id)); if (!t) throw new Error('No task with that id'); await patch(t.id, { archived: true }); toast('"' + t.title + '" הוסרה', () => patch(t.id, { archived: false })); return { ok: true }; } },
+    { name: 'set_order', description: 'Set the order of tasks inside the list, most important first. Pass task ids in the new order.',
+      inputSchema: { type: 'object', properties: { ids: { type: 'array', items: { type: 'string' } } }, required: ['ids'] },
+      execute: async i => { const ids = Array.isArray(i.ids) ? i.ids.map(String) : []; for (let k = 0; k < ids.length; k++) { if (tasks.some(t => t.id === ids[k])) await patch(ids[k], { order: k }); } return { ok: true, ordered: ids.length }; } }
+  ];
+  const ERR = { not_granted: 'כדי שאוכל לענות, צריך לאשר לדף להשתמש ב-Claude. בינתיים אפשר להוסיף משימות בטופס.', sampling_disabled: 'הצ\'אט לא זמין בחשבון הזה כרגע.', rate_limited: 'הרבה הודעות ברגע אחד. נסי שוב בעוד דקה.', session_expired: 'צריך להתחבר מחדש ל-claude.ai.', refused: 'את זה אני לא יכול לעשות. נסי לנסח אחרת.', tools_unavailable: 'כאן אני יכול רק לענות, לא לשנות את הרשימה. אפשר להוסיף בטופס.' };
+
+  async function send(text) {
+    text = String(text || '').trim(); if (!text || busy) return;
+    if (!sample) { drawChat('<div class="tk-msg ai">הצ\'אט עובד כשהדף פתוח ב-claude.ai. בינתיים אפשר להוסיף משימות בטופס.</div>'); return; }
+    busy = true; $('tk-send').disabled = true; $('tk-say').value = ''; autoGrow();
+    chat.push({ role: 'user', content: text, at: new Date().toISOString() });
+    drawChat('<div class="tk-msg ai thinking" id="tk-pending"><span class="tk-dots"><i></i><i></i><i></i></span></div>');
+    const ctl = new AbortController();
+    const turns = chat.slice(-16).map(m => ({ role: m.role, content: m.content }));
+    while (turns.length && turns[0].role !== 'user') turns.shift();
+    turns[turns.length - 1] = { role: 'user', content: turns[turns.length - 1].content + '\n\n(לענות בעברית בלבד)' };
+    try {
+      const { text: reply } = await sample([{ role: 'user', content: rules() }, ...turns], {
+        modelTier: 'quick', tools: TOOLS, signal: ctl.signal,
+        onText: ({ text: t }) => { const el = $('tk-pending'); if (el) { el.classList.remove('thinking'); el.textContent = t; $('tk-msgs').scrollTop = $('tk-msgs').scrollHeight; } }
+      });
+      chat.push({ role: 'assistant', content: reply.trim(), at: new Date().toISOString() });
+    } catch (e) {
+      const kept = e && e.text ? e.text.trim() : '';
+      if (kept && e.code !== 'refused') chat.push({ role: 'assistant', content: kept, at: new Date().toISOString() });
+      if (!e || e.code !== 'cancelled') chat.push({ role: 'assistant', content: ERR[e && e.code] || 'משהו השתבש בחיבור. נסי שוב.', at: new Date().toISOString() });
+      if (e && (e.code === 'not_granted' || e.code === 'sampling_disabled')) sample = null;
+    } finally {
+      busy = false; $('tk-send').disabled = false; drawChat(); saveChat(); render();
+      if (flashId) setTimeout(() => { flashId = null; render(); }, 1600);
+    }
+  }
+  $('tk-composer').addEventListener('submit', e => { e.preventDefault(); send($('tk-say').value); });
+  $('tk-say').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send($('tk-say').value); } });
+  function autoGrow() { const t = $('tk-say'); t.style.height = 'auto'; t.style.height = Math.min(160, t.scrollHeight) + 'px'; }
+  $('tk-say').addEventListener('input', autoGrow);
+  $('tk-chips').addEventListener('click', e => { const c = e.target.closest('.tk-chip'); if (!c) return; const t = c.textContent; if (/:\s*$/.test(t)) { $('tk-say').value = t; $('tk-say').focus(); autoGrow(); } else send(t); });
+  $('tk-clear').addEventListener('click', () => { if (busy) return; chat = []; drawChat(); saveChat(); });
+
+  /* ---------- connect: only the owner gets the live list and the chat ---------- */
+  function gate(msg) { const g = $('tk-gate'); g.textContent = msg; g.hidden = false; $('tk-db-status').textContent = ''; $('tk-chat-status').textContent = ''; $('tk-composer').hidden = true; $('tk-chips').hidden = true; }
+  (async function connect() {
+    const use = n => { try { return window.claude && window.claude.use ? Promise.resolve(window.claude.use(n)).catch(() => null) : Promise.resolve(null); } catch (e) { return Promise.resolve(null); } };
+    const user = await use('user');
+    const db = await use('db');
+    if (!db || !user) { gate('הצ\'אט והמשימות עובדים רק כשהדף פתוח ב-claude.ai ואת מחוברת. מהקובץ במחשב הם לא זמינים.'); render(); return; }
+    if (!user.isOwner()) { gate('המשימות והצ\'אט פרטיים של זיוה, ולכן הם לא מוצגים כאן.'); $('tk-grid').hidden = true; return; }
+    tasksCol = db.collection('tasks'); chatDoc = db.doc('chat/log');
+    const slow = setTimeout(() => { $('tk-db-status').textContent = 'עדיין מתחבר…'; }, 10000);
+    tasksCol.onSnapshot(snap => {
+      tasks = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
+      if (!snap.metadata.fromCache) { clearTimeout(slow); $('tk-db-status').textContent = 'נשמר אוטומטית'; $('tk-db-status').classList.remove('warn'); }
+      render();
+    }, () => { clearTimeout(slow); $('tk-db-status').textContent = 'אין חיבור למשימות כרגע.'; $('tk-db-status').classList.add('warn'); });
+    chatDoc.onSnapshot(snap => { const m = snap.exists ? (snap.data().messages || []) : []; if (!busy) { chat = m.slice(-40); drawChat(); } }, () => {});
+    sample = await use('sample');
+    if (!sample) $('tk-chat-status').textContent = 'הצ\'אט לא זמין כאן. אפשר להוסיף משימות בטופס.';
+    const d = await use('dictation');
+    if (d) {
+      const mic = $('tk-mic'); mic.hidden = false; let base = '';
+      d.onState(({ state, reason }) => { const on = state !== 'idle'; mic.classList.toggle('on', on); mic.setAttribute('aria-label', on ? 'לעצור' : 'לדבר במקום לכתוב'); if (state === 'idle' && (reason === 'not_granted' || reason === 'unavailable')) mic.hidden = true; });
+      d.onPartial(({ text }) => { $('tk-say').value = base + text; autoGrow(); });
+      d.onFinal(({ text }) => { base = (base + text).replace(/^\s+/, ''); $('tk-say').value = base; autoGrow(); });
+      mic.addEventListener('click', () => { if (d.active()) { d.stop().catch(() => {}); return; } base = $('tk-say').value ? $('tk-say').value + ' ' : ''; d.start().catch(e => { if (e && (e.code === 'not_granted' || e.code === 'unavailable')) mic.hidden = true; }); });
+    }
+  })();
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && iso(new Date()) !== TODAY) { now = new Date(); TODAY = iso(now); render(); } });
+  render();
 })();
 </script>

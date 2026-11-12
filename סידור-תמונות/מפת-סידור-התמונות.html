@@ -643,7 +643,7 @@ a.ev:hover { transform: translateY(-3px); border-color: var(--c1); }
         <div class="card-head">
           <h2>סאני גדלה · שנה אחרי שנה</h2>
           <button type="button" class="btn" id="sunny-play">▶ להציג את סאני גדלה</button>
-          <p>26 תמונות מגיל חודשיים ועד גיל 3 ו-4 חודשים, בארבע תיקיות: כל שנה מסתיימת ביום ההולדת שלה. שנה ראשונה עם עוגת הנר "1", שנה שנייה עם יום ההולדת בחוף בארץ, ושנה שלישית עם יום ההולדת בפארק בלונדון. אלה עותקים בתיקייה "סאני גדלה", והמקור של כל תמונה נשאר במקומו.</p>
+          <p>כל התמונות של סאני, 2,838 תמונות, בארבע תיקיות לפי שנה. כל שנה נגמרת ביום ההולדת: עוגת הנר "1", יום ההולדת בחוף בארץ, ויום ההולדת בפארק בלונדון. כאן מוצגות 26 נבחרות, והכפתור ליד כל שנה פותח את כל התמונות שלה. אלה עותקים, והמקור של כל תמונה נשאר בתיקיית השנה שלו.</p>
         </div>
         <div class="ruler" id="ruler"></div>
         <div class="sunny-grid" id="sunny-grid"></div>
@@ -772,7 +772,7 @@ a.ev:hover { transform: translateY(-3px); border-color: var(--c1); }
     { "title": "בלילה: סאני גדלה ומפות הטיולים", "text": "בחרתי 20 תמונות של סאני לפי הגיל ושמרתי עותקים בתיקייה \"סאני גדלה\". הוספתי מפה של הטיול בהודו, מפת כל הטיולים וציר זמן של המשפחה. כל לחיצה פותחת את התמונות במחשב." }
   ],
   "today": [
-    { "title": "להציץ בסאני גדלה", "text": "26 תמונות, מסודרות בתיקייה לכל שנה. כל שנה נגמרת ביום ההולדת: עוגת הנר \"1\", יום ההולדת בחוף בארץ, והפיקניק בלונדון.", "link": "#journeys", "linkText": "לסאני גדלה" },
+    { "title": "להציץ בסאני גדלה", "text": "כל 2,838 התמונות של סאני, בתיקייה לכל שנה. כל שנה נגמרת ביום ההולדת: עוגת הנר \"1\", יום ההולדת בחוף בארץ, והפיקניק בלונדון.", "link": "#journeys", "linkText": "לסאני גדלה" },
     { "title": "יום רגוע", "text": "במקום פילאטיס: 5 דקות נשימה עדינה, או הופעה מוקלטת מהספה. רעיונות בטאב רעיונות לסקירת הבוקר.", "link": "#morning", "linkText": "לרעיונות העדינים" },
     { "title": "להחליט על תיקיית הודו", "text": "1,311 תמונות של הודו נמצאות פעמיים: בתיקייה הודו ובתיקיית 2026. אפשר להשאיר אותן כאלבום, או לפנות עוד 10 ג'יגה.", "link": "#move", "linkText": "למה עובר לאן" },
     { "title": "לתת שמות לפנים ב-Google Photos", "text": "סאני כבר מסומנת. אפשר להוסיף את זני ואת שאר המשפחה, ואז לחפש כל אחד לפי השם.", "link": "https://photos.google.com/people", "linkText": "לאנשים ב-Google Photos" }
@@ -861,11 +861,13 @@ a.ev:hover { transform: translateY(-3px); border-color: var(--c1); }
     .sort((a, b) => b.count - a.count);
 
   const SUNNY_YEARS = [
-    { dir: 'גיל 0-1 · עד יום הולדת שנה', title: 'השנה הראשונה', sub: 'מלידה ועד יום הולדת שנה', cake: 'עוגה עם נר "1"' },
-    { dir: 'גיל 1-2 · עד יום הולדת שנתיים', title: 'השנה השנייה', sub: 'עד יום הולדת שנתיים', cake: 'יום הולדת בחוף בארץ' },
-    { dir: 'גיל 2-3 · עד יום הולדת 3', title: 'השנה השלישית', sub: 'עד יום הולדת 3', cake: 'יום הולדת בפארק בלונדון' },
-    { dir: 'גיל 3 ומעלה', title: 'מגיל 3', sub: 'השנה הרביעית, עד עכשיו', cake: '' }
+    { dir: 'גיל 0-1 · עד יום הולדת שנה', all: 604, title: 'השנה הראשונה', sub: 'מלידה ועד יום הולדת שנה', cake: 'עוגה עם נר "1"' },
+    { dir: 'גיל 1-2 · עד יום הולדת שנתיים', all: 1203, title: 'השנה השנייה', sub: 'עד יום הולדת שנתיים', cake: 'יום הולדת בחוף בארץ' },
+    { dir: 'גיל 2-3 · עד יום הולדת 3', all: 78, title: 'השנה השלישית', sub: 'עד יום הולדת 3', cake: 'יום הולדת בפארק בלונדון' },
+    { dir: 'גיל 3 ומעלה', all: 953, title: 'מגיל 3', sub: 'השנה הרביעית, עד עכשיו', cake: '' }
   ];
+  const SUNNY_PICKS = '00 · הנבחרות לאתר (26)';
+  const SUNNY_ALL = SUNNY_YEARS.reduce((a, Y) => a + Y.all, 0);
   const RLM2 = '‏‏';
   const SUNNY_LIST = [
     [0, '2023-06-23', 'בזרועות סבתא זיוה', '01 · גיל חודשיים · 2023-06-23.jpg', P + '\\2023\\IMG_4322.JPG'],
@@ -895,7 +897,7 @@ a.ev:hover { transform: translateY(-3px); border-color: var(--c1); }
     [3, '2026-07-17', 'צמות', '25 · גיל 3 וחודשיים · 2026-07-17.jpg', P + '\\2026\\IMG_4039.HEIC'],
     [3, '2026-08-26', 'בחוף עם סבתא זיוה', '26 · גיל 3 ו-4 חודשים · 2026-08-26.jpg', BEACH + '\\photos-part2\\BEN_1491.JPG']
   ].map(([y, date, caption, file, source], i) => { const parts = file.replace(/\.jpg$/, '').split(' · '); const bday = parts[1].startsWith('יום הולדת');
-    return { i, y, date, caption, file, source, bday, path: SUNNY + '\\' + SUNNY_YEARS[y].dir + '\\' + file, age: bday ? parts[1].replace(' בחוף', '') : parts[1] }; });
+    return { i, y, date, caption, file, source, bday, path: SUNNY + '\\' + SUNNY_PICKS + '\\' + file, age: bday ? parts[1].replace(' בחוף', '') : parts[1] }; });
   const BIRTH = new Date(2023, 3, 19);
   const monthsOld = d => { const t = new Date(d + 'T12:00:00'); return (t - BIRTH) / (1000 * 60 * 60 * 24 * 30.4375); };
   const dateHe = d => { const [y, m, dd] = d.split('-').map(Number); return dd + '.' + m + '.' + y; };
@@ -918,7 +920,7 @@ a.ev:hover { transform: translateY(-3px); border-color: var(--c1); }
         { name: '2024-04 יום הולדת שנה לסאני', count: 84, dup: true, dir: P + '\\2024', note: 'התמונות עדיין בתיקיית 2024 (19 באפריל). לא נספרות פעמיים.' },
         { name: '2018 חתונה וחינה', count: 38, dir: WED, note: 'מתוך תיקייה שרובה מסמכים.' }] },
       { name: 'פרויקטים ואלבומים', fam: 'plum', tag: 'חדש', virtual: true, note: 'אלבומים מיוחדים וחומרי עבודה.', children: [
-        { name: 'סאני גדלה', count: 26, dir: SUNNY, note: '26 עותקים, בתיקייה לכל שנה. כל שנה נגמרת ביום ההולדת.', children: SUNNY_YEARS.map((Y, y) => ({ name: Y.dir, count: SUNNY_LIST.filter(s => s.y === y).length, dir: SUNNY + '\\' + Y.dir, note: Y.cake ? 'נגמרת ב' + Y.cake : 'מיום ההולדת השלישי ועד היום' })) },
+        { name: 'סאני גדלה', count: SUNNY_ALL + 26, dir: SUNNY, note: 'כל התמונות של סאני, בתיקייה לכל שנה. כל שנה נגמרת ביום ההולדת. אלה עותקים, והמקורות נשארו בתיקיות השנים.', children: SUNNY_YEARS.map(Y => ({ name: Y.dir, count: Y.all, dir: SUNNY + '\\' + Y.dir, note: Y.cake ? 'נגמרת ב' + Y.cake : 'מיום ההולדת השלישי ועד היום' })).concat([{ name: SUNNY_PICKS, count: 26, dir: SUNNY + '\\' + SUNNY_PICKS, note: 'התמונות שמוצגות באתר' }]) },
         { name: 'ספר סאני · איורים', count: 13, dir: D + '\\סאני ספר' }, { name: 'Canva', count: 2, dir: D + '\\canva' }] },
       { name: 'לבדוק ולהחליט', fam: 'clay', tag: 'צריך החלטה', virtual: true, note: 'תיקיות שצריך לפתוח ולהחליט לאן הן שייכות.', children: [
         { name: 'פל מאי 2018', count: 838, dir: D + '\\פל מאי 2018', note: 'צולם בספטמבר–אוקטובר 2017. טיול? אירוע?' },
@@ -1154,7 +1156,7 @@ a.ev:hover { transform: translateY(-3px); border-color: var(--c1); }
     ${[12, 24, 36].map((m, k) => `<span class="cake-mark" style="right:${(m / MAXM * 100).toFixed(2)}%" title="יום הולדת ${k + 1}">🎂</span>`).join('')}
     ${SUNNY_LIST.map(s => `<button type="button" class="pin${s.bday ? ' bd' : ''}" style="right:${(monthsOld(s.date) / MAXM * 100).toFixed(2)}%" data-i="${s.i}" title="${esc(s.age)} · ${dateHe(s.date)}" aria-label="${esc(s.age)}"></button>`).join('')}`;
   $('sunny-grid').innerHTML = SUNNY_YEARS.map((Y, y) => { const items = SUNNY_LIST.filter(s => s.y === y);
-    return `<section class="sy" style="--d:${y * .12}s"><div class="sy-head"><span class="sy-num">${y === 3 ? '3+' : y + '-' + (y + 1)}</span><div><h3>${esc(Y.title)}</h3><span>${esc(Y.sub)} · ${items.length} תמונות${Y.cake ? ' · נגמרת ב' + esc(Y.cake) : ''}</span></div><a class="sy-open" ${hrefOpen(SUNNY + '\\' + Y.dir)}>פתיחת התיקייה</a></div>
+    return `<section class="sy" style="--d:${y * .12}s"><div class="sy-head"><span class="sy-num">${y === 3 ? '3+' : y + '-' + (y + 1)}</span><div><h3>${esc(Y.title)}</h3><span>${esc(Y.sub)} · ${fmt(Y.all)} תמונות בתיקייה, ${items.length} נבחרות כאן${Y.cake ? ' · נגמרת ב' + esc(Y.cake) : ''}</span></div><a class="sy-open" ${hrefOpen(SUNNY + '\\' + Y.dir)}>כל ${fmt(Y.all)} התמונות ‹</a></div>
       <div class="sy-grid">${items.map(s => `<button type="button" class="sp${s.bday ? ' bd' : ''}" data-i="${s.i}" style="--d:${(y * .12 + s.i * .03).toFixed(2)}s"><div class="ph"><img loading="lazy" alt="סאני, ${esc(s.age)}" src="${fileUrl(s.path)}" onerror="this.remove()">${s.bday ? '<span class="cake">🎂</span>' : ''}<span class="age-big">${esc(s.age)}</span></div><div class="meta"><b>${esc(s.caption)}</b><span>${dateHe(s.date)}</span></div></button>`).join('')}</div></section>`; }).join('');
   $('sunny-open').setAttribute('href', openUrl(SUNNY)); if (!isLocal) { $('sunny-open').target = '_blank'; $('sunny-open').rel = 'noopener'; }
   let lbI = 0, lbTimer = null, lbAuto = false;
@@ -1204,7 +1206,7 @@ a.ev:hover { transform: translateY(-3px); border-color: var(--c1); }
   /* ---------- moves ---------- */
   const moves = [
     ['תמונות', '2016 עד 2026', 11261, 'שנים', 'sky', 'ok', 'כבר מסודר. בשנים העמוסות (2024 עד 2026) כדאי לחלק גם לחודשים.', P],
-    ['תמונות', 'סאני גדלה (חדש)', 26, 'פרויקטים ואלבומים', 'plum', 'ok', '26 עותקים, בתיקייה לכל שנה עד יום ההולדת. המקורות נשארו במקומם.', SUNNY],
+    ['תמונות', 'סאני גדלה (חדש)', 2864, 'פרויקטים ואלבומים', 'plum', 'ok', 'כל התמונות של סאני כעותקים, בתיקייה לכל שנה עד יום ההולדת. המקורות נשארו במקומם.', SUNNY],
     ['תמונות', 'הודו', 1311, 'טיולים › 2026-02 הודו', 'leaf', 'ask', 'עותקים של תמונות מתיקיית 2026. להשאיר כאלבום, או לפנות 10 ג\'יגה.', INDIA],
     ['שולחן העבודה', 'טיולים', 2146, 'טיולים', 'leaf', 'go', 'כבר מחולק לפי טיול. מוסיפים שנה לשם, מאחדים את שתי תיקיות יפן ואת דלהי עם הודו.', TRIPS],
     ['שולחן העבודה', 'תמונות חוף, יום הולדת', 432, 'אירועים משפחתיים', 'rose', 'go', 'מאחדים את שני החלקים (part1, part2) לתיקייה אחת.', BEACH],
